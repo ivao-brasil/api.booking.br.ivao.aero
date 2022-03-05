@@ -55,10 +55,14 @@ class AuthController extends Controller
         $positions = explode(',', env('AUTHORIZED_STAFF_POSITIONS'));
         $regex = "/";
 
-        foreach($positions as $position){
+        foreach($positions as $index => $position){
             $position = str_replace('0', "[0-9]", $position);
             $position = $division . '-' . $position;
-            $regex .= $position . '|';
+            $regex .= $position;
+
+            if($index < count($positions) - 1) {
+                $regex .= "|";
+            }
         }
 
         $regex .= "/";
@@ -66,6 +70,6 @@ class AuthController extends Controller
 
         if(preg_match($regex, $ivaoUser['staff'])) return 1;
 
-        return $regex;
+        return 0;
     }
 }
