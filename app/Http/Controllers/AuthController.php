@@ -30,7 +30,6 @@ class AuthController extends Controller
                 'country'=> $ivaoUser['country']
             ]);
 
-
             User::where('vid', $ivaoUser['vid'])
                     ->update(['admin' => AuthController::canAccessAdmin($ivaoUser)]);
 
@@ -51,10 +50,22 @@ class AuthController extends Controller
 
         if(!$ivaoUser['staff']) return 0;
 
-        $regex = "/[A-Z]{2}-EC|[A-Z]{2}-EAC|[A-Z]{2}-EA[0-9]|[A-Z]{2}-DIR|[A-Z]{2}-ADIR|[A-Z]{2}-WM|[A-Z]{2}-AWM|[A-Z]{2}-WMA[0-9]/";
+        $division   =   env('IVAO_DIVISION');
+
+        $positions = explode(',', env('AUTHORIZED_STAFF_POSITIONS'));
+        $regex = "/";
+
+        foreach($positions as $position){
+            $position = str_replace('0', "[0-9]", $position);
+            $position = $division . '-' . $position;
+            $regex .= $position . '|';
+        }
+
+        $regex .= "/";
+
 
         if(preg_match($regex, $ivaoUser['staff'])) return 1;
 
-        return 0;
+        return $regex;
     }
 }
