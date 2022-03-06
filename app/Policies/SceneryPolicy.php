@@ -30,4 +30,12 @@ class SceneryPolicy
 
         return true;
     }
+
+    public function getAll(User $user) {
+        if(!$user->admin) {
+            return Response::deny("You have no admin permissions");
+        }
+
+        return true;
+    }
 }

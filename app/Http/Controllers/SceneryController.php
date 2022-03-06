@@ -30,6 +30,8 @@ class SceneryController extends Controller
 
     public function get(Request $request)
     {
+        $this->authorize('getAll', Scenery::class);
+
         $scenaries = Scenery::where('id', '>=', 1);
 
         $perPage = (int)$request->query('perPage', 5);
