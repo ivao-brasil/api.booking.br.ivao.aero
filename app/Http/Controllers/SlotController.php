@@ -188,7 +188,7 @@ class SlotController extends Controller
     {
         $perPage = (int)$request->query('perPage', 5,);
 
-        $slots = Slot::with('owner')->where('eventId', $eventId);
+        $slots = Slot::with('owner')->where('eventId', $eventId)->orderBy('slotTime');
 
         $queryParams = (array)$request->query();
         foreach ($queryParams as $param => $value) {
