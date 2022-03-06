@@ -79,7 +79,7 @@ class EventController extends Controller
     private static function setAirports($eventId, $airportList)
     {
         EventAirport::where('eventId', $eventId)->delete();
-        
+
         foreach (explode(',', $airportList) as $icao) {
             $airport = new EventAirport;
 
@@ -100,6 +100,10 @@ class EventController extends Controller
 
         if ($request->query('status')) {
             $events->where('status', $request->query('status'));
+        }
+
+        if (!$request->input('showAll')) {
+            $events = $events->where('status', '!=', 'finished');
         }
 
         return $this->paginationService->transform($events->paginate($perPage > 25 ? 25 : $perPage));

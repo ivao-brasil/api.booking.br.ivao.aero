@@ -378,6 +378,15 @@
                                 "finished"
                             ]
                         }
+                    },
+                    {
+                        "name": "showAll",
+                        "in": "query",
+                        "description": "If disabled: shows only scheduled and created events",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
                     }
                 ]
             }
