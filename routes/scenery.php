@@ -16,10 +16,12 @@
 use Illuminate\Support\Facades\Auth;
 
 $router->group(['middleware' => 'auth', 'prefix' => '/event/{eventId}/scenery'], function() use($router) {
-    $router->post('/', 'SceneryController@create');
-    $router->get('/', 'SceneryController@get');
+    $router->get('/', 'SceneryController@getByEvent');
 });
 
 $router->group(['middleware' => 'auth', 'prefix' => 'scenery'], function() use($router) {
+    $router->get('/', 'SceneryController@get');
+    $router->post('/', 'SceneryController@create');
+    $router->put('/{id}', 'SceneryController@update');
     $router->delete('/{sceneryId}', 'SceneryController@delete');
 });
