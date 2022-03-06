@@ -93,8 +93,15 @@ class EventController extends Controller
     public function get(Request $request)
     {
 
-        $events = Event::where('id', '>=', 1)->with('airports.sceneries');  //Specifies that we want to bring the airports, as well as the sceneries
+        $events = Event::where('id', '>=', 1)
+                    ->with('airports.sceneries');  //Specifies that we want to bring the airports, as well as the sceneries
 
+
+        if (!$request->input('showAll')) {
+            $events = $events->where('status', '!=', 'finished');
+        } else {
+            if(!Auth::user()->admin) return response(['error' => 'you cannot access all the events.'], 403);
+        }
 
         $perPage = (int)$request->query('perPage', 5,);
 
@@ -102,9 +109,7 @@ class EventController extends Controller
             $events->where('status', $request->query('status'));
         }
 
-        if (!$request->input('showAll')) {
-            $events = $events->where('status', '!=', 'finished');
-        }
+
 
         return $this->paginationService->transform($events->paginate($perPage > 25 ? 25 : $perPage));
     }
@@ -112,7 +117,9 @@ class EventController extends Controller
     public function getSingle($id)
     {
         $event = Event::where('id', $id)->with('airports.sceneries')->first();  //Returns a single Event from the database
-        if(!$event) return response(['error' => 'no event found'], 404);
+
+        if(!$event || (($event->status == 'finished' || $event->has_ended) && !Auth::user()->admin)) return response(['error' => 'no event found'], 404);
+
         return $event;
     }
 
