@@ -47,7 +47,7 @@ class SceneryController extends Controller
             abort(404, 'Scenery not founded');
         }
 
-        // $this->authorize('update', $scenery);
+        $this->authorize('update', $scenery);
 
         $scenery->fill([
             'title' => $request->input('title'),
@@ -70,9 +70,9 @@ class SceneryController extends Controller
 
     public function delete(String $sceneryId)
     {
-        Scenery
-            ::where('id', $sceneryId)
-            ->delete();
+        $this->authorize('delete', Scenery::class);
+
+        Scenery::where('id', $sceneryId)->delete();
     }
 
     private function getValidatorRules() {
