@@ -98,7 +98,8 @@ class EventController extends Controller
 
 
         if (!$request->input('showAll')) {
-            $events = $events->where('status', '!=', 'finished');
+            $events = $events
+                        ->where('status', '!=', 'finished');
         } else {
             if(!Auth::user()->admin) return response(['error' => 'you cannot access all the events.'], 403);
         }
@@ -108,8 +109,6 @@ class EventController extends Controller
         if ($request->query('status')) {
             $events->where('status', $request->query('status'));
         }
-
-
 
         return $this->paginationService->transform($events->paginate($perPage > 25 ? 25 : $perPage));
     }
