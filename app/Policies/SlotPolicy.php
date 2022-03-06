@@ -29,6 +29,7 @@ class SlotPolicy
 
     public function bookUpdate(User $user, Slot $slot, string $action)
     {
+
         if ($user->suspended) {
             return Response::deny('You are suspended to book flights');
         }
