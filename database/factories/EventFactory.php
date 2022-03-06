@@ -21,10 +21,13 @@ class EventFactory extends Factory
      */
     public function definition()
     {
+        $start  = time() + rand(1 * 24 * 60 * 60, 14 * 24 * 60 * 60);
+        $end    = $start + rand(3 * 60 * 60, 5 * 60 * 60);
+
         return [
             'division' => 'BR',
-            'dateStart' => $this->faker->dateTime(),
-            'dateEnd' => $this->faker->dateTime(),
+            'dateStart' => $start,
+            'dateEnd' => $end,
             'eventName' => $this->faker->sentence(3),
             'privateSlots' => $this->faker->numberBetween(0, 1),
             'status' => $this->faker->randomElement(['created', 'scheduled', 'finished']),
