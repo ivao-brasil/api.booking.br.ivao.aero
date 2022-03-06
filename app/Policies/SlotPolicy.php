@@ -44,7 +44,7 @@ class SlotPolicy
         $eventEndDate = $slotEvent->dateEnd;
         $now = Carbon::now();
 
-        if ($slot->bookingStatus !== "prebooked") {
+        if ($slot->bookingStatus === "prebooked") {
             /** @var \Carbon\Carbon */
             $eventStartDate = $slotEvent->dateStart;
             $diffFromStart = $now->diffInDays($eventStartDate, false);
