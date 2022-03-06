@@ -82,7 +82,7 @@ class SlotController extends Controller
             abort(404, 'Slot not found');
         }
 
-        $this->authorize('bookUpdate', $slot);
+        $this->authorize('bookUpdate', ['slot' => $slot, 'action' => $action]);
 
         if ($action === 'book') {
             if ($slot->private) {
