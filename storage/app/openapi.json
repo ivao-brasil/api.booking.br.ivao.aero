@@ -775,6 +775,58 @@
                 }
             }
         },
+        "/event/{eventId}/slot/count": {
+            "get": {
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "schema": {
+                            "type": "number"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Slot"
+                ],
+                "summary": "Get slot count by their type",
+                "security": [
+                    {
+                        "authentication": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Slot count result",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "departure": {
+                                            "type": "number"
+                                        },
+                                        "landing": {
+                                            "type": "number"
+                                        },
+                                        "private": {
+                                            "type": "number"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "User not authenticated"
+                    },
+                    "403": {
+                        "description": "Invalid permissions"
+                    }
+                }
+            }
+        },
         "/slot/{slotId}": {
             "delete": {
                 "summary": "Delete a given slot",
@@ -1245,7 +1297,7 @@
                     }
                 }
             }
-        },
+        }
     },
     "components": {
         "securitySchemes": {

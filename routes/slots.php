@@ -20,6 +20,7 @@ $router->group(['middleware' => 'auth', 'prefix' => '/event/{eventId}/slot'], fu
     $router->get('/', 'SlotController@list');
     $router->post('/many', 'SlotController@createMany');
     $router->get('/mine', 'SlotController@getMySlots');
+    $router->get('/count', 'SlotController@getEventSlotCountByType');
 });
 
 $router->group(['middleware' => 'auth', 'prefix' => '/slot'], function () use ($router) {
