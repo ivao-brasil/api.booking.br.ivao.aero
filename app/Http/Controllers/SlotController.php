@@ -191,7 +191,11 @@ class SlotController extends Controller
         $slots = Slot::with('owner')->where('eventId', $eventId)->orderBy('slotTime');
 
         $queryParams = (array)$request->query();
+
+        //Cycle through the parameters
         foreach ($queryParams as $param => $value) {
+
+            //This selects only the available slots
             if ($param == "available") {
                 $slots = $slots
                     ->doesntHave("owner")
@@ -200,14 +204,25 @@ class SlotController extends Controller
                 continue;
             }
 
-            if (!in_array($param, Slot::$allowedQueryParams)) {
-                continue;
-            }
-
+            //This validates only private slots
             if ($param == "private") {
                 $value = filter_var($value, FILTER_VALIDATE_BOOLEAN);
             }
 
+            //This selects only slots from a given ICAO code (ABC, AZU, etc)
+            if ($param == "airline") {
+                $slots = $slots
+                          ->where('flightNumber', "LIKE", $request->input("airline") . "%");
+
+                continue;
+            }
+
+            //This filters the rest of the parameters
+            if (!in_array($param, Slot::$allowedQueryParams)) {
+                continue;
+            }
+
+            //If nothing else happens, queries it.
             $slots = $slots->where($param, $value);
         }
 
