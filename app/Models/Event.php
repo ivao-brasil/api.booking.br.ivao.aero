@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Event extends Model
 {
+
     protected $fillable = [
         'division',
         'dateStart',
@@ -37,6 +38,8 @@ class Event extends Model
         'dateEnd'
     ];
 
+    protected $appends = ['has_started', 'has_ended'];
+
     public function creator()
     {
         return $this->belongsTo(User::class, 'createdBy', 'id');
@@ -60,5 +63,17 @@ class Event extends Model
     public function airports()
     {
         return $this->hasMany(EventAirport::class, 'eventId', 'id');
+    }
+
+    public function getHasStartedAttribute()
+    {
+        if(strtotime($this->dateStart) < time()) return true;
+        return false;
+    }
+
+    public function getHasEndedAttribute()
+    {
+        if(strtotime($this->dateEnd) < time()) return true;
+        return false;
     }
 }
