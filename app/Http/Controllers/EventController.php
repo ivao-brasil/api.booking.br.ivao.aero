@@ -117,7 +117,7 @@ class EventController extends Controller
     {
         $event = Event::where('id', $id)->with('airports.sceneries')->first();  //Returns a single Event from the database
 
-        if(!$event || (($event->status == 'finished' || $event->has_ended) && !Auth::user()->admin)) return response(['error' => 'no event found'], 404);
+        if(!$event || $event->has_ended && !Auth::user()->admin) return response(['error' => 'no event found'], 404);
 
         return $event;
     }
