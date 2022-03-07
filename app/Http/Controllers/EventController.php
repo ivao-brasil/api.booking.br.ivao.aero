@@ -99,7 +99,7 @@ class EventController extends Controller
 
         if (!$request->input('showAll')) {
             $events = $events
-                        ->where('status', '!=', 'finished');
+                        ->where('dateEnd', '<=', Carbon::today());
         } else {
             if(!Auth::user()->admin) return response(['error' => 'you cannot access all the events.'], 403);
         }
