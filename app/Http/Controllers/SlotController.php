@@ -277,4 +277,24 @@ class SlotController extends Controller
 
         Slot::insert($slots);
     }
+
+    public function getEventSlotCountByType(string $eventId) {
+        $takeoffCount = Slot::where('eventId', $eventId)
+            ->where('type', 'takeoff')
+            ->count();
+
+        $landingCount = Slot::where('eventId', $eventId)
+            ->where('type', 'landing')
+            ->count();
+
+        $privateCount = Slot::where('eventId', $eventId)
+            ->where('private', 1)
+            ->count();
+
+        return response()->json([
+            'departure' => $takeoffCount,
+            'landing'   => $landingCount,
+            'private'   => $privateCount
+        ]);
+    }
 }
