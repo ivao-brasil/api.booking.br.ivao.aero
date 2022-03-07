@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Event;
 use App\Models\EventAirport;
 use App\Services\PaginationService;
+use Carbon\Carbon;
 use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -99,7 +100,7 @@ class EventController extends Controller
 
         if (!$request->input('showAll')) {
             $events = $events
-                        ->where('dateEnd', '<=', Carbon::today());
+                        ->where('dateEnd', '<=', Carbon::now());
         } else {
             if(!Auth::user()->admin) return response(['error' => 'you cannot access all the events.'], 403);
         }
