@@ -41,6 +41,10 @@ class SlotPolicy
         /** @var \App\Models\Event */
         $slotEvent = $slot->event;
 
+        if($slotEvent->status !== 'scheduled') {
+            return Response::deny("Event is not active");
+        }
+
         /** @var \Carbon\Carbon */
         $eventEndDate = $slotEvent->dateEnd;
         $now = Carbon::now();
