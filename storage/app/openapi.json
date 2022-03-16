@@ -10,10 +10,13 @@
     },
     "servers": [
         {
-            "url": "http://localhost/api"
+            "url": "http://localhost:8080"
         },
         {
-            "url": "https://booking.br.ivao.aero/api"
+            "url": "https://api.booking.br.ivao.aero"
+        },
+        {
+            "url": "https://api.booking.stage.br.ivao.aero"
         }
     ],
     "tags": [
@@ -374,6 +377,15 @@
                                 "scheduled",
                                 "finished"
                             ]
+                        }
+                    },
+                    {
+                        "name": "showAll",
+                        "in": "query",
+                        "description": "If disabled: shows only scheduled and created events",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
                         }
                     }
                 ]
@@ -772,6 +784,58 @@
                 }
             }
         },
+        "/event/{eventId}/slot/count": {
+            "get": {
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "schema": {
+                            "type": "number"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Slot"
+                ],
+                "summary": "Get slot count by their type",
+                "security": [
+                    {
+                        "authentication": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Slot count result",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "departure": {
+                                            "type": "number"
+                                        },
+                                        "landing": {
+                                            "type": "number"
+                                        },
+                                        "private": {
+                                            "type": "number"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "User not authenticated"
+                    },
+                    "403": {
+                        "description": "Invalid permissions"
+                    }
+                }
+            }
+        },
         "/slot/{slotId}": {
             "delete": {
                 "summary": "Delete a given slot",
@@ -918,18 +982,12 @@
                 }
             }
         },
-        "/event/{eventId}/scenery": {
+        "/scenery": {
             "get": {
                 "tags": [
                     "Scenery"
                 ],
-                "parameters": [
-                    {
-                        "name": "eventId",
-                        "in": "path"
-                    }
-                ],
-                "summary": "Get sceneries for a given event",
+                "summary": "Get all sceneries",
                 "security": [
                     {
                         "authentication": []
@@ -964,9 +1022,9 @@
                         "in": "path"
                     }
                 ],
-                "summary": "Create a new Scenery for given event",
+                "summary": "Create a new Scenery",
                 "requestBody": {
-                    "description": "Slot Data",
+                    "description": "Scenery Data",
                     "required": true,
                     "content": {
                         "application/json": {
@@ -1023,6 +1081,43 @@
                 }
             }
         },
+        "/event/{eventId}/scenery": {
+            "get": {
+                "tags": [
+                    "Scenery"
+                ],
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path"
+                    }
+                ],
+                "summary": "Get sceneries for a given event",
+                "security": [
+                    {
+                        "authentication": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Scenery result",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Scenery"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "User not authenticated"
+                    }
+                }
+            }
+        },
         "/scenery/{sceneryId}": {
             "delete": {
                 "summary": "Delete a given scenery",
@@ -1043,6 +1138,74 @@
                 "responses": {
                     "200": {
                         "description": "Scenery successfully deleted"
+                    },
+                    "401": {
+                        "description": "User not authenticated"
+                    },
+                    "403": {
+                        "description": "Invalid permissions"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Scenery"
+                ],
+                "parameters": [
+                    {
+                        "name": "sceneryId",
+                        "in": "path"
+                    }
+                ],
+                "summary": "Updates a Scenery",
+                "requestBody": {
+                    "description": "Scenery Data",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "description": "Scenery Title"
+                                    },
+                                    "license": {
+                                        "type": "string",
+                                        "enum": [
+                                            "freeware",
+                                            "payware"
+                                        ],
+                                        "description": "The sceney license"
+                                    },
+                                    "link": {
+                                        "type": "string",
+                                        "description": "The scenery download link"
+                                    },
+                                    "simulator": {
+                                        "type": "boolean",
+                                        "enum": [
+                                            "fs9",
+                                            "fsx",
+                                            "p3d",
+                                            "xp11",
+                                            "msfs"
+                                        ],
+                                        "description": "The scenery simulator"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "authentication": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Scenery successfully updated"
                     },
                     "401": {
                         "description": "User not authenticated"
@@ -1143,7 +1306,7 @@
                     }
                 }
             }
-        },
+        }
     },
     "components": {
         "securitySchemes": {

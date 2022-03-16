@@ -82,7 +82,7 @@ class SlotController extends Controller
             abort(404, 'Slot not found');
         }
 
-        $this->authorize('bookUpdate', $slot);
+        $this->authorize('bookUpdate', [ $slot, $action]);
 
         if ($action === 'book') {
             if ($slot->private) {
@@ -188,10 +188,14 @@ class SlotController extends Controller
     {
         $perPage = (int)$request->query('perPage', 5,);
 
-        $slots = Slot::with('owner')->where('eventId', $eventId);
+        $slots = Slot::with('owner')->where('eventId', $eventId)->orderBy('slotTime');
 
         $queryParams = (array)$request->query();
+
+        //Cycle through the parameters
         foreach ($queryParams as $param => $value) {
+
+            //This selects only the available slots
             if ($param == "available") {
                 $slots = $slots
                     ->doesntHave("owner")
@@ -200,14 +204,25 @@ class SlotController extends Controller
                 continue;
             }
 
-            if (!in_array($param, Slot::$allowedQueryParams)) {
-                continue;
-            }
-
+            //This validates only private slots
             if ($param == "private") {
                 $value = filter_var($value, FILTER_VALIDATE_BOOLEAN);
             }
 
+            //This selects only slots from a given ICAO code (ABC, AZU, etc)
+            if ($param == "airline") {
+                $slots = $slots
+                          ->where('flightNumber', "LIKE", $request->input("airline") . "%");
+
+                continue;
+            }
+
+            //This filters the rest of the parameters
+            if (!in_array($param, Slot::$allowedQueryParams)) {
+                continue;
+            }
+
+            //If nothing else happens, queries it.
             $slots = $slots->where($param, $value);
         }
 
@@ -261,5 +276,25 @@ class SlotController extends Controller
         })->toArray();
 
         Slot::insert($slots);
+    }
+
+    public function getEventSlotCountByType(string $eventId) {
+        $takeoffCount = Slot::where('eventId', $eventId)
+            ->where('type', 'takeoff')
+            ->count();
+
+        $landingCount = Slot::where('eventId', $eventId)
+            ->where('type', 'landing')
+            ->count();
+
+        $privateCount = Slot::where('eventId', $eventId)
+            ->where('private', 1)
+            ->count();
+
+        return response()->json([
+            'departure' => $takeoffCount,
+            'landing'   => $landingCount,
+            'private'   => $privateCount
+        ]);
     }
 }

@@ -1,4 +1,5 @@
 /vendor
+/.vscode
 /.idea
 Homestead.json
 Homestead.yaml

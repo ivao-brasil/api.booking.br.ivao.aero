@@ -27,24 +27,29 @@ class SlotPolicy
         return true;
     }
 
-    public function bookUpdate(User $user, Slot $slot)
+    public function bookUpdate(User $user, Slot $slot, string $action)
     {
+
         if ($user->suspended) {
             return Response::deny('You are suspended to book flights');
         }
 
-        if ($slot->pilotId !== $user->id && !is_null($slot->pilotId)) {
+        if (!is_null($slot->pilotId) && $slot->pilotId !== $user->id) {
             return Response::deny("You're not owner of this slot");
         }
 
         /** @var \App\Models\Event */
         $slotEvent = $slot->event;
 
+        if($slotEvent->status !== 'scheduled') {
+            return Response::deny("Event is not active");
+        }
+
         /** @var \Carbon\Carbon */
         $eventEndDate = $slotEvent->dateEnd;
         $now = Carbon::now();
 
-        if ($slot->bookingStatus !== "prebooked") {
+        if ($slot->bookingStatus === "prebooked" && $action === "confirm") {
             /** @var \Carbon\Carbon */
             $eventStartDate = $slotEvent->dateStart;
             $diffFromStart = $now->diffInDays($eventStartDate, false);

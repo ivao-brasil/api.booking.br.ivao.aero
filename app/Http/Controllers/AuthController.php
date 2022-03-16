@@ -30,6 +30,10 @@ class AuthController extends Controller
                 'country'=> $ivaoUser['country']
             ]);
 
+            User::where('vid', $ivaoUser['vid'])
+                    ->update(['admin' => AuthController::canAccessAdmin($ivaoUser)]);
+
+
             return response()->json([
                 'jwt' => JwtService::encode([
                     'vid' => $ivaoUser['vid'],
@@ -40,5 +44,32 @@ class AuthController extends Controller
             Log::error("Error to authenticate user");
             return response()->json(['error' => 'error to authenticate user'], 403);
         }
+    }
+
+    public static function canAccessAdmin($ivaoUser) {
+
+        if(!$ivaoUser['staff']) return 0;
+
+        $division   =   env('IVAO_DIVISION');
+
+        $positions = explode(',', env('AUTHORIZED_STAFF_POSITIONS'));
+        $regex = "/";
+
+        foreach($positions as $index => $position){
+            $position = str_replace('0', "[0-9]", $position);
+            $position = $division . '-' . $position;
+            $regex .= $position;
+
+            if($index < count($positions) - 1) {
+                $regex .= "|";
+            }
+        }
+
+        $regex .= "/";
+
+
+        if(preg_match($regex, $ivaoUser['staff'])) return 1;
+
+        return 0;
     }
 }
