@@ -3,7 +3,7 @@ on:
     branches:
       - main
       
-name: 🚀 Deploy to the Stage enviroment
+name: 🚀 Deploy to the Production enviroment
 jobs:
   web-deploy:
     name: 🎉 Deploy
