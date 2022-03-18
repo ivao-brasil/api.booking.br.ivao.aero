@@ -124,10 +124,15 @@ class SlotController extends Controller
 
             $user->slotsBooked()->save($slot);
         } else if ($action === "cancel") {
+
             if ($slot->private) {
+                if($slot->type === 'takeoff') {
+                    $slot->destination = null;
+                } else if ($slot->type === 'landing') {
+                    $slot->origin = null;
+                }
+
                 $slot->flightNumber = null;
-                $slot->origin = null;
-                $slot->destination = null;
                 $slot->aircraft = null;
             }
 
