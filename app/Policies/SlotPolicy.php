@@ -59,6 +59,12 @@ class SlotPolicy
             if ($eventStartDate->greaterThan($now) && $diffFromStart > $maxDaysBeforeEvent) {
                 return Response::deny("The slot can only be confirmed $maxDaysBeforeEvent days before the event");
             }
+        } else if($slot->bookingStatus === "free" && $action === "book") {
+            //If the user has a slot for the same event and at the same time of the one they are trying to book
+            //TODO: For some reason, i had to use count() > 0 because the empty object was not being recognized as false. Maybe there is a better way of doing that?
+            if($user->slotsBooked->where('eventId', $slot->event->id)->where('slotTime', $slot->slotTime)->count() > 0){
+                return Response::deny('You already have a slot booked for the same time');
+            }
         }
 
         if ($now->greaterThan($eventEndDate)) {
