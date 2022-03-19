@@ -102,7 +102,7 @@ class EventController extends Controller
             $events = $events
                         ->where('dateEnd', '>=', Carbon::now());
         } else {
-            if(!Auth::user()->admin) return response(['error' => 'you cannot access all the events.'], 403);
+            if(!Auth::user()->admin) return response(['error' => 'admin.noAdmin'], 403);
         }
 
         $perPage = (int)$request->query('perPage', 5,);
@@ -118,7 +118,7 @@ class EventController extends Controller
     {
         $event = Event::where('id', $id)->with('airports.sceneries')->first();  //Returns a single Event from the database
 
-        if(!$event || $event->has_ended && !Auth::user()->admin) return response(['error' => 'no event found'], 404);
+        if(!$event || $event->has_ended && !Auth::user()->admin) return response(['error' => 'event.notFound'], 404);
 
         return $event;
     }
@@ -144,7 +144,7 @@ class EventController extends Controller
         $event = Event::find($id);
 
         if (!$event) {
-            abort(404, 'Event not founded');
+            abort(404, 'event.notFound');
         }
 
         $this->authorize('update', $event);
@@ -181,7 +181,7 @@ class EventController extends Controller
         $event = Event::find($id);
 
         if (!$event) {
-            abort(404, 'Event not found');
+            abort(404, 'event.notFound');
         }
 
         $this->authorize('delete', $event);

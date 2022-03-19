@@ -10,7 +10,7 @@ class UserPolicy
     public function list(User $user)
     {
         if (!$user->admin) {
-            return Response::deny("You have no admin permissions");
+            return Response::deny("admin.noAdmin");
         }
 
         return true;
@@ -19,17 +19,17 @@ class UserPolicy
     public function update(User $user, String $userId)
     {
         if($user->id == $userId) {
-            return Response::deny("You can't update yourself");
+            return Response::deny("admin.updateYourself");
         }
 
         if (!$user->admin) {
-            return Response::deny("You have no admin permissions");
+            return Response::deny("admin.noAdmin");
         }
 
         $targetUser = User::find($userId);
 
         if($targetUser->admin) {
-            return Response::deny("You can't update another admin!");
+            return Response::deny("admin.updateAdmin");
         }
 
         return true;
