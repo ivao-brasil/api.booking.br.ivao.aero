@@ -43,7 +43,7 @@ class UserController extends Controller
         $user = User::find($userId);
 
         if (!$user) {
-            abort(404, "User not founded");
+            abort(404, "user.notFound");
         }
 
         $user->suspended = $request->input('suspended');

@@ -12,21 +12,21 @@ class EventPolicy
     {
         return $user->admin
             ? Response::allow()
-            : Response::deny("You have no admin permissions");
+            : Response::deny("admin.noAdmin");
     }
 
     public function update(User $user, Event $event)
     {
         if (!$user->admin) {
-            return Response::deny('You have no admin permissions');
+            return Response::deny("admin.noAdmin");
         }
 
         if ($event->status === 'finished') {
-            return Response::deny('Event is finished and is immutable');
+            return Response::deny('admin.eventFinisheed');
         }
 
         if ($user->division !== $event->division) {
-            return Response::deny('Event is out of your current division');
+            return Response::deny('admin.wrongDivision');
         }
 
         return true;
@@ -35,15 +35,15 @@ class EventPolicy
     public function delete(User $user, Event $event)
     {
         if (!$user->admin) {
-            return Response::deny('You have no admin permissions');
+            return Response::deny('admin.noAdmin');
         }
 
         if ($event->status === 'scheduled') {
-            return Response::deny('Event is active');
+            return Response::deny('admin.isActive');
         }
 
         if ($user->division !== $event->division) {
-            return Response::deny('Event is out of your current division');
+            return Response::deny('admin.wrongDivision');
         }
 
         return true;
