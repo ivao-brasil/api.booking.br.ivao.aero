@@ -93,6 +93,11 @@ class SlotController extends Controller
                     'aircraft' => 'required|string|max:4',
                 ]);
 
+                //TODO: This is another instance of the ->count() need (just like the SlotPolicy).
+                if($slot->event->slots->where('flightNumber', $request->input('flightNumber'))->count() > 0){
+                    abort(403, "There is already a flight booked with this flight number.");
+                }
+
                 $slot->fill($request->all());
             }
 
@@ -119,10 +124,15 @@ class SlotController extends Controller
 
             $user->slotsBooked()->save($slot);
         } else if ($action === "cancel") {
+
             if ($slot->private) {
+                if($slot->type === 'takeoff') {
+                    $slot->destination = null;
+                } else if ($slot->type === 'landing') {
+                    $slot->origin = null;
+                }
+
                 $slot->flightNumber = null;
-                $slot->origin = null;
-                $slot->destination = null;
                 $slot->aircraft = null;
             }
 
