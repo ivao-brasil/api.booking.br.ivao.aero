@@ -230,7 +230,7 @@ class SlotController extends Controller
             //This selects only slots that match a given flight number piece
             if ($param == "flightNumber") {
                 $slots = $slots
-                          ->where('flightNumber', "LIKE", "%" . $request->input("airline") . "%");
+                          ->where('flightNumber', "LIKE", "%" . $request->input("flightNumber") . "%");
 
                 continue;
             }
