@@ -227,6 +227,14 @@ class SlotController extends Controller
                 continue;
             }
 
+            //This selects only slots that match a given flight number piece
+            if ($param == "flightNumber") {
+                $slots = $slots
+                          ->where('flightNumber', "LIKE", "%" . $request->input("airline") . "%");
+
+                continue;
+            }
+
             //This filters the rest of the parameters
             if (!in_array($param, Slot::$allowedQueryParams)) {
                 continue;
