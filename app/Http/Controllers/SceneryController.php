@@ -46,7 +46,7 @@ class SceneryController extends Controller
         $scenery = Scenery::find($id);
 
         if (!$scenery) {
-            abort(404, 'Scenery not founded');
+            abort(404, 'scenery.notFound');
         }
 
         $this->authorize('update', $scenery);

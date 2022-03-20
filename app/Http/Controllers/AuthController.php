@@ -42,7 +42,7 @@ class AuthController extends Controller
             ]);
         } catch (Exception $e) {
             Log::error("Error to authenticate user");
-            return response()->json(['error' => 'error to authenticate user'], 403);
+            return response()->json(['error' => 'auth.error'], 403);
         }
     }
 

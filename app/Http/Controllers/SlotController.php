@@ -34,7 +34,7 @@ class SlotController extends Controller
         $event = Event::find($eventId);
 
         if (!$event) {
-            abort(404, 'Event not founded');
+            abort(404, 'event.notFound');
         }
 
         $this->validate($request, ['private' => 'required|boolean']);
@@ -79,7 +79,7 @@ class SlotController extends Controller
         $user = Auth::user();
 
         if (!$slot) {
-            abort(404, 'Slot not found');
+            abort(404, 'book.notFound');
         }
 
         $this->authorize('bookUpdate', [ $slot, $action]);
@@ -95,7 +95,7 @@ class SlotController extends Controller
 
                 //TODO: This is another instance of the ->count() need (just like the SlotPolicy).
                 if($slot->event->slots->where('flightNumber', $request->input('flightNumber'))->count() > 0){
-                    abort(403, "There is already a flight booked with this flight number.");
+                    abort(403, "book.duplicateNumber");
                 }
 
                 $slot->fill($request->all());
@@ -108,7 +108,7 @@ class SlotController extends Controller
             $now = Carbon::now();
 
             if ($now->greaterThan($eventStartDate)) {
-                abort(403, "The slot can not be booked after the event starts");
+                abort(403, "book.hasStarted");
             }
 
             $hoursBeforeStart = $now->diffInHours($eventStartDate, false);
@@ -157,7 +157,7 @@ class SlotController extends Controller
         $slot = Slot::find($slotId);
 
         if (!$slot) {
-            abort(404, 'Slot not founded');
+            abort(404, 'book.notFound');
         }
 
         $this->validate($request, ['private' => 'required|boolean']);

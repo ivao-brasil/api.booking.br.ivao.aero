@@ -9,7 +9,7 @@ class SceneryPolicy
 {
     public function create(User $user) {
         if(!$user->admin) {
-            return Response::deny("You have no admin permissions");
+            return Response::deny("admin.noAdmin");
         }
 
         return true;
@@ -17,7 +17,7 @@ class SceneryPolicy
 
     public function update(User $user) {
         if(!$user->admin) {
-            return Response::deny("You have no admin permissions");
+            return Response::deny("admin.noAdmin");
         }
 
         return true;
@@ -25,7 +25,7 @@ class SceneryPolicy
 
     public function delete(User $user) {
         if(!$user->admin) {
-            return Response::deny("You have no admin permissions");
+            return Response::deny("admin.noAdmin");
         }
 
         return true;
@@ -33,7 +33,7 @@ class SceneryPolicy
 
     public function getAll(User $user) {
         if(!$user->admin) {
-            return Response::deny("You have no admin permissions");
+            return Response::deny("admin.noAdmin");
         }
 
         return true;
