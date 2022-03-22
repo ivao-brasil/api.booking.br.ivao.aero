@@ -241,7 +241,7 @@ class SlotController extends Controller
             }
 
             //If nothing else happens, queries it.
-            $slots = $slots->where($param, $value);
+            $slots = $slots->where($param, 'LIKE', "%" . $value . "%");
         }
 
         return $this->paginationService->transform(
