@@ -217,20 +217,17 @@ class SlotController extends Controller
             //This validates only private slots
             if ($param == "private") {
                 $value = filter_var($value, FILTER_VALIDATE_BOOLEAN);
+                
+                $slots = $slots
+                          ->where('private', $param);
+                
+                continue;
             }
 
             //This selects only slots from a given ICAO code (ABC, AZU, etc)
             if ($param == "airline") {
                 $slots = $slots
                           ->where('flightNumber', "LIKE", $request->input("airline") . "%");
-
-                continue;
-            }
-
-            //This selects only slots that match a given flight number piece
-            if ($param == "flightNumber") {
-                $slots = $slots
-                          ->where('flightNumber', "LIKE", "%" . $request->input("flightNumber") . "%");
 
                 continue;
             }
