@@ -219,7 +219,7 @@ class SlotController extends Controller
                 $value = filter_var($value, FILTER_VALIDATE_BOOLEAN);
                 
                 $slots = $slots
-                          ->where('private', $param);
+                          ->where('private', $value);
                 
                 continue;
             }
