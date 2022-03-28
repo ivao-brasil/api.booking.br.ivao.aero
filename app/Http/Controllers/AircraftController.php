@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Cache;
 class AircraftController extends Controller
 {
     //Returns the flight time in seconds
-    public function getFlightTimeFromICAO(string $aircraftIcao, float $distance)
+    public static function getFlightTimeFromICAO(string $aircraftIcao, float $distance)
     {
         $aircraft = Aircraft::where('icao', $aircraftIcao)->first();
         if(!$aircraft) return 1;

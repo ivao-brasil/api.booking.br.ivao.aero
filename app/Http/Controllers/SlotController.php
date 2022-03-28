@@ -385,7 +385,6 @@ class SlotController extends Controller
         $slotTime->hours(substr($slot->slotTime, 0, 2));
         $slotTime->minutes(substr($slot->slotTime, 2, 2));
 
-
         //We will set start and end times for the flight
         if($slot->type === 'takeoff') {
             $departure  = $slotTime->timestamp;
@@ -404,6 +403,11 @@ class SlotController extends Controller
         Cache::put($slot->id . '_timestamps', $timestamps);
 
         return $timestamps;
+    }
+
+    public static function getFlightTime($slot){
+        $distance = AirportController::getFlightDistance($slot->origin, $slot->destination);
+        return AircraftController::getFlightTimeFromICAO($slot->aircraft, $distance);
     }
 
 }
