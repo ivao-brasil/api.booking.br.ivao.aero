@@ -38,8 +38,6 @@ class Slot extends Model
         'destination'
     ];
 
-    protected $appends = ['flight_time', 'distance', 'timestamps'];
-
     public function owner()
     {
         return $this->belongsTo(User::class, 'pilotId', 'id');
@@ -57,7 +55,7 @@ class Slot extends Model
 
     public function getFlightTimeAttribute()
     {
-        if(!$this->origin || !$this->destination) return 0;
+        if(!$this->aircraft) return 0;
         return AircraftController::getFlightTimeFromICAO($this->aircraft, $this->getDistanceAttribute());
     }
 
