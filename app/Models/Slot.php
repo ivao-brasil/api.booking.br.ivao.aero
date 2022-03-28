@@ -54,4 +54,19 @@ class Slot extends Model
     {
         return SlotFactory::new();
     }
+
+    public function getFlightTimeAttribute()
+    {
+        return AircraftController::getFlightTimeFromICAO($this->aircraft, $this->getDistanceAttribute());
+    }
+
+    public function getDistanceAttribute()
+    {
+        return AirportController::getFlightDistance($this->origin, $this->destination);
+    }
+
+    public function getTimestampsAttribute()
+    {
+        return SlotController::getSlotTimestamps($this);
+    }
 }
