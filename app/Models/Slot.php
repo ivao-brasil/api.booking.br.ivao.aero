@@ -57,16 +57,19 @@ class Slot extends Model
 
     public function getFlightTimeAttribute()
     {
+        if(!$this->origin || !$this->destination) return 0;
         return AircraftController::getFlightTimeFromICAO($this->aircraft, $this->getDistanceAttribute());
     }
 
     public function getDistanceAttribute()
     {
+        if(!$this->origin || !$this->destination) return 0;
         return AirportController::getFlightDistance($this->origin, $this->destination);
     }
 
     public function getTimestampsAttribute()
     {
+        if(!$this->origin || !$this->destination) return [0,0];
         return SlotController::getSlotTimestamps($this);
     }
 }
