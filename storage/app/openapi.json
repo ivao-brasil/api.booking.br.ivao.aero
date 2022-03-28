@@ -1427,6 +1427,14 @@
                     "aircraft": {
                         "type": "string"
                     },
+                    "flightTime": {
+                        "type": "integer",
+                        "description": "Flight Time in Seconds"
+                    },
+                    "flightDistance": {
+                        "type": "integer",
+                        "description": "Flight Distance in Nautical Miles"
+                    },
                     "owner": {
                         "$ref": "#/components/schemas/User",
                         "required": false

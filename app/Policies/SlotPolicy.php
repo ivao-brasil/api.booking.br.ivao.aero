@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Http\Controllers\SlotController;
 use App\Models\Slot;
 use App\Models\User;
 use Carbon\Carbon;
@@ -60,10 +61,11 @@ class SlotPolicy
                 return Response::deny("book.tooEarly.$maxDaysBeforeEvent");
             }
         } else if($slot->bookingStatus === "free" && $action === "book") {
-            //If the user has a slot for the same event and at the same time of the one they are trying to book
-            //TODO: For some reason, i had to use count() > 0 because the empty object was not being recognized as false. Maybe there is a better way of doing that?
-            if($user->slotsBooked->where('eventId', $slot->event->id)->where('slotTime', $slot->slotTime)->count() > 0){
-                return Response::deny('book.alreadyBusy');
+            //Cycle through the user slots and checks for overlapping slots.
+            foreach($user->slotsBooked->where('eventId', $slot->event->id) as $bookedSlot) {
+                if(SlotController::checkOverlappingSlots($slot, $bookedSlot)) {
+                    return Response::deny('book.alreadyBusy');
+                }
             }
         }
 
