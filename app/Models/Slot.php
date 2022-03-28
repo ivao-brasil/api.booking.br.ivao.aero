@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Http\Controllers\AircraftController;
+use App\Http\Controllers\AirportController;
 use App\Http\Controllers\SlotController;
 use Database\Factories\SlotFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -36,7 +38,7 @@ class Slot extends Model
         'destination'
     ];
 
-    protected $appends = ['flight_time', 'distance'];
+    protected $appends = ['flight_time', 'distance', 'timestamps'];
 
     public function owner()
     {
@@ -55,11 +57,16 @@ class Slot extends Model
 
     public function getFlightTimeAttribute()
     {
-        return SlotController::getFlightTime($this);
+        return AircraftController::getFlightTimeFromICAO($this->aircraft, $this->getDistanceAttribute());
     }
 
     public function getDistanceAttribute()
     {
-        return SlotController::getFlightDistance($this);;
+        return AirportController::getFlightDistance($this->origin, $this->destination);
+    }
+
+    public function getTimestampsAttribute()
+    {
+        return SlotController::getSlotTimestamps($this);
     }
 }
