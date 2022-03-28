@@ -31,7 +31,8 @@ class AirportController extends Controller
         $cacheTtl = Carbon::now()->addMonth();
 
         return Cache::remember($cacheKey, $cacheTtl, function () use ($icao) {
-            return AirportController::$hqApi->getAirportDataByIcao($icao);
+            $hqApi = new HQAPIService;
+            return $hqApi->getAirportDataByIcao($icao);
         });
     }
 
@@ -40,8 +41,8 @@ class AirportController extends Controller
     public static function getFlightDistance(string $origin, string $destination)
     {
 
-        $origin = AirportController::getDetails($origin);
-        $destination = AirportController::getDetails($destination);
+        $origin = AirportController::getAirportByICAO($origin);
+        $destination = AirportController::getAirportByICAO($destination);
 
         $latDistance = AirportController::getLatDistance($origin['latitude'], $destination['latitude']);
         $lonDistance = AirportController::getLonDistance($origin['longitude'], $destination['longitude']);
