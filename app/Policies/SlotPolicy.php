@@ -60,13 +60,6 @@ class SlotPolicy
             if ($eventStartDate->greaterThan($now) && $diffFromStart > $maxDaysBeforeEvent) {
                 return Response::deny("book.tooEarly.$maxDaysBeforeEvent");
             }
-        } else if($slot->bookingStatus === "free" && $action === "book") {
-            //Cycle through the user slots and checks for overlapping slots.
-            foreach($user->slotsBooked->where('eventId', $slot->event->id) as $bookedSlot) {
-                if(SlotController::checkOverlappingSlots($slot, $bookedSlot)) {
-                    return Response::deny('book.alreadyBusy');
-                }
-            }
         }
 
         if ($now->greaterThan($eventEndDate)) {

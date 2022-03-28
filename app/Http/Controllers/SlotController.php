@@ -123,6 +123,13 @@ class SlotController extends Controller
                 $slot->bookingStatus = 'prebooked';
             }
 
+            //Cycle through the user slots and checks for overlapping slots.
+            foreach($user->slotsBooked->where('eventId', $slot->event->id) as $bookedSlot) {
+                if(SlotController::checkOverlappingSlots($slot, $bookedSlot)) {
+                    return abort(403, 'book.alreadyBusy');
+                }
+            }
+
             $slot->bookingTime = (new DateTime())->format("Y-m-d H:i:s");
 
             $user->slotsBooked()->save($slot);
