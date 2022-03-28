@@ -17,7 +17,7 @@ class AirportController extends Controller
         $this->hqApi = $hqApi;
     }
 
-    public function getDetails(string $icao) {
+    public static function getDetails(string $icao) {
         $cacheKey = AirportController::AIRPORT_DETAILS_CACHE_KEY_PREFIX . "_$icao";
         $cacheTtl = Carbon::now()->addMonth();
 

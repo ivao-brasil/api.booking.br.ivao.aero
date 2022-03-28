@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Aircraft;
 use App\Models\Event;
 use App\Models\Slot;
 use App\Services\PaginationService;
@@ -217,10 +218,10 @@ class SlotController extends Controller
             //This validates only private slots
             if ($param == "private") {
                 $value = filter_var($value, FILTER_VALIDATE_BOOLEAN);
-                
+
                 $slots = $slots
                           ->where('private', $value);
-                
+
                 continue;
             }
 
@@ -311,5 +312,64 @@ class SlotController extends Controller
             'landing'   => $landingCount,
             'private'   => $privateCount
         ]);
+    }
+
+    public function distanceCalculator()
+    {
+        return Slot::all()->first();
+    }
+
+    public static function getFlightTime(Slot $slot)
+    {
+        $distance = SlotController::getFlightDistance($slot);
+        $speed = Aircraft::where('icao', $slot->aircraft)->first()->speed;
+        return round(($distance/$speed), 2);
+    }
+
+    public static function getFlightDistance(Slot $slot)
+    {
+        $origin = AirportController::getDetails($slot->origin);
+        $destination = AirportController::getDetails($slot->destination);
+
+        $latDistance = SlotController::getLatDistance($origin['latitude'], $destination['latitude']);
+        $lonDistance = SlotController::getLonDistance($origin['longitude'], $destination['longitude']);
+
+        //Applies pythagorean theorem to find out the distance in degrees.
+        $distance = sqrt( ($latDistance*$latDistance) + ($lonDistance*$lonDistance) );
+
+        //Converts degrees into miles
+        $distance = $distance * 60;
+
+        //Returns the rounded value
+        return round($distance);
+    }
+
+    public static function getLatDistance(float $origin, float $destination){
+        //If both values are positive or negative (on the same hemisphere)
+        if(($origin > 0 && $destination > 0) || ($origin < 0 && $destination < 0))
+        {
+            return abs(abs($origin) - abs($destination));
+        } else {
+            //If they are in different hemisphere
+            return abs(abs($origin) + abs($destination));
+        }
+    }
+
+    public static function getLonDistance(float $origin, float $destination){
+        //If both values are positive or negative (on the same hemisphere)
+        if(($origin > 0 && $destination > 0) || ($origin < 0 && $destination < 0))
+        {
+            $lonDistance =  abs(abs($origin) - abs($destination));
+        } else {
+            //If they are in different hemisphere
+            $lonDistance =  abs(abs($origin) + abs($destination));
+        }
+
+        //If the value is greater than 180 degrees, you must use the other side of the earth
+        if($lonDistance > 180){
+            $lonDistance = abs($lonDistance - 360);
+        }
+
+        return $lonDistance;
     }
 }
