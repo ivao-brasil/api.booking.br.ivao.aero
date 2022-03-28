@@ -27,7 +27,7 @@ class AirportController extends Controller
     }
 
     //This gets the great circle distance between two airports, in nautical miles
-    public static function getFlightDistance(string $origin = 'SBBR', string $destination = 'SBBR')
+    public static function getFlightDistance(string $origin, string $destination)
     {
         $origin = AirportController::getDetails($origin);
         $destination = AirportController::getDetails($destination);
