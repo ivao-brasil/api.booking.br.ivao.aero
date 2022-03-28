@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Aircraft;
 use App\Models\Event;
 use App\Models\Slot;
+use App\Models\User;
 use App\Services\PaginationService;
 use Carbon\Carbon;
 use DateTime;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
@@ -314,62 +316,87 @@ class SlotController extends Controller
         ]);
     }
 
-    public function distanceCalculator()
+    /*
+     *  Checks if two slots are overlapping
+     */
+    public static function checkOverlappingSlots($slotOne, $slotTwo)
     {
-        return Slot::all()->first();
-    }
-
-    public static function getFlightTime(Slot $slot)
-    {
-        $distance = SlotController::getFlightDistance($slot);
-        $speed = Aircraft::where('icao', $slot->aircraft)->first()->speed;
-        return round(($distance/$speed), 2);
-    }
-
-    public static function getFlightDistance(Slot $slot)
-    {
-        $origin = AirportController::getDetails($slot->origin);
-        $destination = AirportController::getDetails($slot->destination);
-
-        $latDistance = SlotController::getLatDistance($origin['latitude'], $destination['latitude']);
-        $lonDistance = SlotController::getLonDistance($origin['longitude'], $destination['longitude']);
-
-        //Applies pythagorean theorem to find out the distance in degrees.
-        $distance = sqrt( ($latDistance*$latDistance) + ($lonDistance*$lonDistance) );
-
-        //Converts degrees into miles
-        $distance = $distance * 60;
-
-        //Returns the rounded value
-        return round($distance);
-    }
-
-    public static function getLatDistance(float $origin, float $destination){
-        //If both values are positive or negative (on the same hemisphere)
-        if(($origin > 0 && $destination > 0) || ($origin < 0 && $destination < 0))
-        {
-            return abs(abs($origin) - abs($destination));
-        } else {
-            //If they are in different hemisphere
-            return abs(abs($origin) + abs($destination));
-        }
-    }
-
-    public static function getLonDistance(float $origin, float $destination){
-        //If both values are positive or negative (on the same hemisphere)
-        if(($origin > 0 && $destination > 0) || ($origin < 0 && $destination < 0))
-        {
-            $lonDistance =  abs(abs($origin) - abs($destination));
-        } else {
-            //If they are in different hemisphere
-            $lonDistance =  abs(abs($origin) + abs($destination));
+        //If the slots belong to different events, just return false
+        if($slotOne->event != $slotTwo->event) {
+            return false;
         }
 
-        //If the value is greater than 180 degrees, you must use the other side of the earth
-        if($lonDistance > 180){
-            $lonDistance = abs($lonDistance - 360);
+        //Get the timestamps (departure and arrival) from both slots
+        $slotOneTimestamp = SlotController::getSlotTimestamps($slotOne);
+        $slotTwoTimestamp  = SlotController::getSlotTimestamps($slotTwo);
+
+
+        /*
+         *  This gets a bit complex, but bear with me:
+         *
+         *  Below there are 4 conditions that check if the problem is solved:
+         *
+         *  Case 1: Slot A STARTS BEFORE Slot B starts.
+         *  Case 2: Slot A ENDS BEFORE Slot B starts.
+         *  Case 3: Slot A STARTS AFTER Slot B ends.
+         *  Case 4: Slot A ENDS AFTER Slot B ends.
+         *
+         *  What we want is for cases 1 and 2 to be true, or 3 and 4 to be true, so we can assure a given slot will happen BEFORE or AFTER another,
+         *  but never during.
+         */
+
+        $case1 = ( ($slotOneTimestamp['departure'] < $slotTwoTimestamp['departure'])    && ($slotOneTimestamp['departure'] < $slotTwoTimestamp['arrival']) );
+        $case2 = ( ($slotOneTimestamp['arrival'] < $slotTwoTimestamp['departure'])      && ($slotOneTimestamp['arrival'] < $slotTwoTimestamp['arrival']) );
+        $case3 = ( ($slotOneTimestamp['departure'] > $slotTwoTimestamp['departure'])    && ($slotOneTimestamp['departure'] > $slotTwoTimestamp['arrival']) );
+        $case4 = ( ($slotOneTimestamp['arrival'] > $slotTwoTimestamp['departure'])      && ($slotOneTimestamp['arrival'] > $slotTwoTimestamp['arrival']) );
+
+        return ($case1 != $case2) || ($case3 != $case4);
+    }
+
+    //Gets Departure and Arrival timestamps for a given slot
+    public static function getSlotTimestamps($slot)
+    {
+
+        //Although I understand this is not the best way of doing it, I believe it is more readable.
+        if(Cache::has($slot->id . '_timestamps')) {
+            return Cache::get($slot->id . '_timestamps');
         }
 
-        return $lonDistance;
+        //First we determine which day the slot is in.
+        $dateStart = new Carbon($slot->event->dateStart);
+        $dateEnd = new Carbon($slot->event->dateEnd);
+
+        $slotTime = $dateStart;
+
+        if($dateStart->day != $dateEnd->day){
+            if($slot->slotTime < 1200) {
+                $slotTime->addDay();
+            }
+        }
+
+        //After we know the day, we set the ours for the slot
+        $slotTime->hours(substr($slot->slotTime, 0, 2));
+        $slotTime->minutes(substr($slot->slotTime, 2, 2));
+
+
+        //We will set start and end times for the flight
+        if($slot->type === 'takeoff') {
+            $departure  = $slotTime->timestamp;
+            $arrival    = $slotTime->addSeconds($slot->getFlightTimeAttribute())->timestamp;
+        } else if($slot->type === 'landing') {
+            $arrival   = $slotTime->timestamp;
+            $departure = $slotTime->subSeconds($slot->getFlightTimeAttribute())->timestamp;
+        }
+
+        $timestamps = [
+            'departure' => round($departure),
+            'arrival'   => round($arrival)
+        ];
+
+        //We will store this in cache indefinitely
+        Cache::put($slot->id . '_timestamps', $timestamps);
+
+        return $timestamps;
     }
+
 }
