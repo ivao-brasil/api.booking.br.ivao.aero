@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Aircraft;
+use App\Models\Event;
+use App\Models\Slot;
 use App\Services\HQAPIService;
 use App\Services\PaginationService;
 use Carbon\Carbon;
@@ -35,6 +37,33 @@ class AircraftController extends Controller
         $perPage = (int)$request->query('perPage', 5);
 
         return $this->paginationService->transform($aircraft->paginate($perPage > 25 ? 25 : $perPage));
+    }
+
+    //Gets the list of missing aircraft and their respective slot count
+    public function getMissing()
+    {
+        //Authorizes
+        $this->authorize('getAll', Aircraft::class);
+
+        //Gets all valid slots
+        $aircraft = Slot::all()->where('aircraft', '!=', null);
+
+        //Eliminates all aircraft that is already registered into the system
+        $aircraft = $aircraft->reject(function ($value) {
+            return $value->aircraftData != null;
+        });
+
+
+        //Groups by aircraft
+        $aircraft = $aircraft->groupBy('aircraft');
+
+        //Replaces the HUGE list of aircraft with a count()
+        $aircraft = $aircraft->map( function($value, $key){
+            return $value->count();
+        });
+
+        //Don't worry, be 0!
+        return $aircraft;
     }
 
     public function create(Request $request)

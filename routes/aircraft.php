@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Auth;
 
 $router->group(['middleware' => 'auth', 'prefix' => 'aircraft'], function() use($router) {
     $router->get('/', 'AircraftController@get');
+    $router->get('/missing', 'AircraftController@getMissing');
     $router->post('/', 'AircraftController@create');
     $router->put('/{id}', 'AircraftController@update');
     $router->delete('/{id}', 'AircraftController@delete');
