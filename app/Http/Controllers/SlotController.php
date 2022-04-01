@@ -329,7 +329,7 @@ class SlotController extends Controller
     public static function checkOverlappingSlots($slotOne, $slotTwo)
     {
         //If the slots belong to different events, just return false
-        if($slotOne->event != $slotTwo->event) {
+        if($slotOne->event->id != $slotTwo->event->id) {
             return false;
         }
 
