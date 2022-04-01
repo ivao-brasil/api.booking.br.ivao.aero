@@ -1306,6 +1306,217 @@
                     }
                 }
             }
+        },
+        "/aircraft": {
+            "get": {
+                "parameters": [
+                    {
+                        "name": "icao",
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Aircraft"
+                ],
+                "summary": "Get all aircraft registered",
+                "security": [
+                    {
+                        "authentication": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Aircraft list",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "$ref": "#/components/schemas/AirportDetails"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "User not authenticated"
+                    },
+                    "403": {
+                        "description": "Invalid permissions"
+                    }
+                }
+            },
+            "post": {
+                "parameters": [
+                    {
+                        "name": "iata",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "required": true
+                    },
+                    {
+                        "name": "icao",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "required": true
+                    },
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "required": true
+                    },
+                    {
+                        "name": "speed",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Aircraft"
+                ],
+                "summary": "Register an Aircraft",
+                "security": [
+                    {
+                        "authentication": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Successfully installed",
+                    },
+                    "401": {
+                        "description": "User not authenticated"
+                    },
+                    "403": {
+                        "description": "Invalid permissions"
+                    }
+                }
+            }
+        },
+        "/aircraft/{id}": {
+            "put": {
+                "tags": [
+                    "Aircraft"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "required": true
+                    },
+                    {
+                        "name": "iata",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "required": true
+                    },
+                    {
+                        "name": "icao",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "required": true
+                    },
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "required": true
+                    },
+                    {
+                        "name": "speed",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "summary": "Edit an aircraft",
+                "security": [
+                    {
+                        "authentication": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Edited Succesfully"
+                    },
+                    "401": {
+                        "description": "User not authenticated"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Aircraft"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "required": true
+                    }
+                ],
+                "summary": "Delete an Aircraft",
+                "security": [
+                    {
+                        "authentication": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Aircraft Deleted"
+                    },
+                    "401": {
+                        "description": "User not authenticated"
+                    }
+                }
+            }
+        },
+        "/getMissing": {
+            "get": {
+                "tags": [
+                    "Aircraft"
+                ],
+                "summary": "Gets a list of aircraft which are missing from the system.",
+                "security": [
+                    {
+                        "authentication": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Edited Succesfully"
+                    },
+                    "401": {
+                        "description": "User not authenticated"
+                    }
+                }
+            }
         }
     },
     "components": {
