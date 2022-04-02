@@ -11,9 +11,6 @@ class EventPolicy
 {
     public function create(User $user, Carbon $dateStart, Carbon $dateEnd)
     {
-        if($dateStart->diffInHours($dateEnd > 10))
-            return Response::deny('event.tooLong');
-
         return $user->admin
             ? Response::allow()
             : Response::deny("admin.noAdmin");
