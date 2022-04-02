@@ -158,7 +158,7 @@ class EventController extends Controller
         $dateStart->setTimestamp($request->input('dateStart'));
         $dateEnd->setTimestamp($request->input('dateEnd'));
 
-        if($dateStart->diffInHours($dateEnd > 10))
+        if($dateStart->diffInHours($dateEnd) > 10)
             return abort(403, 'event.tooLong');
 
         $event->fill([
