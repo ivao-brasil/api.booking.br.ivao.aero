@@ -33,6 +33,10 @@ class AuthController extends Controller
             User::where('vid', $ivaoUser['vid'])
                     ->update(['admin' => AuthController::canAccessAdmin($ivaoUser)]);
 
+            $user->refresh();
+
+            if(!$user->admin&&env('APP_ENV')=='stage')
+                return response()->json(['error' => 'admin.noAdmin'], 401);
 
             return response()->json([
                 'jwt' => JwtService::encode([

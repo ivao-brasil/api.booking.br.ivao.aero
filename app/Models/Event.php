@@ -68,13 +68,11 @@ class Event extends Model
 
     public function getHasStartedAttribute()
     {
-        if(strtotime($this->dateStart) < time()) return true;
-        return false;
+        return strtotime($this->dateStart) < time();
     }
 
     public function getHasEndedAttribute()
     {
-        if(strtotime($this->dateEnd) < time()) return true;
-        return false;
+        return strtotime($this->dateEnd) < time();
     }
 }

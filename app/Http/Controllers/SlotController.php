@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Aircraft;
 use App\Models\Event;
 use App\Models\Slot;
+use App\Models\User;
 use App\Services\PaginationService;
 use Carbon\Carbon;
 use DateTime;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
@@ -82,7 +85,7 @@ class SlotController extends Controller
             abort(404, 'book.notFound');
         }
 
-        $this->authorize('bookUpdate', [ $slot, $action]);
+        $this->authorize('bookUpdate', [$slot, $action]);
 
         if ($action === 'book') {
             if ($slot->private) {
@@ -99,6 +102,7 @@ class SlotController extends Controller
                 }
 
                 $slot->fill($request->all());
+
             }
 
             /** @var \App\Models\Event */
@@ -107,9 +111,11 @@ class SlotController extends Controller
             $eventStartDate = $slotEvent->dateStart;
             $now = Carbon::now();
 
+
             if ($now->greaterThan($eventStartDate)) {
                 abort(403, "book.hasStarted");
             }
+
 
             $hoursBeforeStart = $now->diffInHours($eventStartDate, false);
             $ignoreConfirmationHours = config('app.slot.ignore_slot_confirmation_hours');
@@ -118,6 +124,13 @@ class SlotController extends Controller
                 $slot->bookingStatus = 'booked';
             } else {
                 $slot->bookingStatus = 'prebooked';
+            }
+
+            //Cycle through the user slots and checks for overlapping slots.
+            foreach($user->slotsBooked->where('eventId', $slot->event->id) as $bookedSlot) {
+                if(SlotController::checkOverlappingSlots($slot, $bookedSlot)) {
+                    return abort(403, 'book.alreadyBusy');
+                }
             }
 
             $slot->bookingTime = (new DateTime())->format("Y-m-d H:i:s");
@@ -217,10 +230,10 @@ class SlotController extends Controller
             //This validates only private slots
             if ($param == "private") {
                 $value = filter_var($value, FILTER_VALIDATE_BOOLEAN);
-                
+
                 $slots = $slots
                           ->where('private', $value);
-                
+
                 continue;
             }
 
@@ -312,4 +325,78 @@ class SlotController extends Controller
             'private'   => $privateCount
         ]);
     }
+
+    /*
+     *  Checks if two slots are overlapping
+     */
+    public static function checkOverlappingSlots($slotOne, $slotTwo)
+    {
+        //If the slots belong to different events, just return false
+        if($slotOne->eventId != $slotTwo->eventId) {
+            return false;
+        }
+
+        //Get the timestamps (departure and arrival) from both slots
+        $slotOneTimestamp = SlotController::getSlotTimestamps($slotOne);
+        $slotTwoTimestamp  = SlotController::getSlotTimestamps($slotTwo);
+
+        //SlotOne ENDS BEFORE SlotTwo starts
+        $case1 = $slotOneTimestamp['arrival'] < $slotTwoTimestamp['departure'];
+
+        //SlotTwo ENDS BEFORE SlotOne starts
+        $case2 = $slotTwoTimestamp['arrival'] < $slotOneTimestamp['departure'];
+
+        return $case1 == false && $case2 == false;
+    }
+
+    //Gets Departure and Arrival timestamps for a given slot
+    public static function getSlotTimestamps($slot)
+    {
+
+        //Although I understand this is not the best way of doing it, I believe it is more readable.
+        if(Cache::has($slot->id . '_timestamps')) {
+            return Cache::get($slot->id . '_timestamps');
+        }
+
+        //First we determine which day the slot is in.
+        $dateStart = new Carbon($slot->event->dateStart);
+        $dateEnd = new Carbon($slot->event->dateEnd);
+
+        $slotTime = $dateStart;
+
+        if($dateStart->day != $dateEnd->day){
+            if($slot->slotTime < 1200) {
+                $slotTime->addDay();
+            }
+        }
+
+        //After we know the day, we set the ours for the slot
+        $slotTime->hours(substr($slot->slotTime, 0, 2));
+        $slotTime->minutes(substr($slot->slotTime, 2, 2));
+
+        //We will set start and end times for the flight
+        if($slot->type === 'takeoff') {
+            $departure  = $slotTime->timestamp;
+            $arrival    = $slotTime->addSeconds($slot->getFlightTimeAttribute())->timestamp;
+        } else if($slot->type === 'landing') {
+            $arrival   = $slotTime->timestamp;
+            $departure = $slotTime->subSeconds($slot->getFlightTimeAttribute())->timestamp;
+        }
+
+        $timestamps = [
+            'departure' => round($departure),
+            'arrival'   => round($arrival)
+        ];
+
+        //We will store this in cache indefinitely
+        Cache::put($slot->id . '_timestamps', $timestamps);
+
+        return $timestamps;
+    }
+
+    public static function getFlightTime($slot){
+        $distance = AirportController::getCircleDistanceBetweenAirports($slot->origin, $slot->destination);
+        return AircraftController::getFlightTimeFromICAO($slot->aircraft, $distance);
+    }
+
 }

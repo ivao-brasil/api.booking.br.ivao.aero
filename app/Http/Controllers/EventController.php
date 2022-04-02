@@ -40,18 +40,21 @@ class EventController extends Controller
 
         $user = Auth::user();
 
-        $dateStart = new DateTime();
-        $dateEnd = new DateTime();
+        $dateStart = new Carbon();
+        $dateEnd = new Carbon();
 
         $dateStart->setTimestamp($request->input('dateStart'));
         $dateEnd->setTimestamp($request->input('dateEnd'));
+
+        if($dateStart->diffInHours($dateEnd) > 10)
+            return abort(403, 'event.tooLong');
 
         $event = new Event();
 
         $event->fill([
             'division' => $user->division,
-            'dateStart' => $dateStart->format("Y-m-d H:i:s"),
-            'dateEnd' => $dateEnd->format("Y-m-d H:i:s"),
+            'dateStart' => $dateStart->toDateTimeString(),
+            'dateEnd' => $dateEnd->toDateTimeString(),
             'eventName' => $request->input('eventName'),
             'privateSlots' => $request->input('privateSlots'),
             'status' => 'created',
@@ -149,16 +152,19 @@ class EventController extends Controller
 
         $this->authorize('update', $event);
 
-        $dateStart = new DateTime();
-        $dateEnd = new DateTime();
+        $dateStart = new Carbon();
+        $dateEnd = new Carbon();
 
         $dateStart->setTimestamp($request->input('dateStart'));
         $dateEnd->setTimestamp($request->input('dateEnd'));
 
+        if($dateStart->diffInHours($dateEnd) > 10)
+            return abort(403, 'event.tooLong');
+
         $event->fill([
             'division' => $user->division,
-            'dateStart' => $dateStart->format("Y-m-d H:i:s"),
-            'dateEnd' => $dateEnd->format("Y-m-d H:i:s"),
+            'dateStart' => $dateStart->toDateTimeString(),
+            'dateEnd' => $dateEnd->toDateTimeString(),
             'eventName' => $request->input('eventName'),
             'privateSlots' => $request->input('privateSlots'),
             'status' => $request->input('status'),
