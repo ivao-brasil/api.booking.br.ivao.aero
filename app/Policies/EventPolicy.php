@@ -9,7 +9,7 @@ use Illuminate\Auth\Access\Response;
 
 class EventPolicy
 {
-    public function create(User $user, Carbon $dateStart, Carbon $dateEnd)
+    public function create(User $user)
     {
         return $user->admin
             ? Response::allow()
