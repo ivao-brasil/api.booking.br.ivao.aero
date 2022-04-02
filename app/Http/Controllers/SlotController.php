@@ -102,6 +102,7 @@ class SlotController extends Controller
                 }
 
                 $slot->fill($request->all());
+
             }
 
             /** @var \App\Models\Event */
@@ -110,9 +111,11 @@ class SlotController extends Controller
             $eventStartDate = $slotEvent->dateStart;
             $now = Carbon::now();
 
+
             if ($now->greaterThan($eventStartDate)) {
                 abort(403, "book.hasStarted");
             }
+
 
             $hoursBeforeStart = $now->diffInHours($eventStartDate, false);
             $ignoreConfirmationHours = config('app.slot.ignore_slot_confirmation_hours');
@@ -329,7 +332,7 @@ class SlotController extends Controller
     public static function checkOverlappingSlots($slotOne, $slotTwo)
     {
         //If the slots belong to different events, just return false
-        if($slotOne->event->id != $slotTwo->event->id) {
+        if($slotOne->eventId != $slotTwo->eventId) {
             return false;
         }
 
@@ -337,27 +340,13 @@ class SlotController extends Controller
         $slotOneTimestamp = SlotController::getSlotTimestamps($slotOne);
         $slotTwoTimestamp  = SlotController::getSlotTimestamps($slotTwo);
 
+        //SlotOne ENDS BEFORE SlotTwo starts
+        $case1 = $slotOneTimestamp['arrival'] < $slotTwoTimestamp['departure'];
 
-        /*
-         *  This gets a bit complex, but bear with me:
-         *
-         *  Below there are 4 conditions that check if the problem is solved:
-         *
-         *  Case 1: Slot A STARTS BEFORE Slot B starts.
-         *  Case 2: Slot A ENDS BEFORE Slot B starts.
-         *  Case 3: Slot A STARTS AFTER Slot B ends.
-         *  Case 4: Slot A ENDS AFTER Slot B ends.
-         *
-         *  What we want is for cases 1 and 2 to be true, or 3 and 4 to be true, so we can assure a given slot will happen BEFORE or AFTER another,
-         *  but never during.
-         */
+        //SlotTwo ENDS BEFORE SlotOne starts
+        $case2 = $slotTwoTimestamp['arrival'] < $slotOneTimestamp['departure'];
 
-        $case1 = ( ($slotOneTimestamp['departure'] < $slotTwoTimestamp['departure'])    && ($slotOneTimestamp['departure'] < $slotTwoTimestamp['arrival']) );
-        $case2 = ( ($slotOneTimestamp['arrival'] < $slotTwoTimestamp['departure'])      && ($slotOneTimestamp['arrival'] < $slotTwoTimestamp['arrival']) );
-        $case3 = ( ($slotOneTimestamp['departure'] > $slotTwoTimestamp['departure'])    && ($slotOneTimestamp['departure'] > $slotTwoTimestamp['arrival']) );
-        $case4 = ( ($slotOneTimestamp['arrival'] > $slotTwoTimestamp['departure'])      && ($slotOneTimestamp['arrival'] > $slotTwoTimestamp['arrival']) );
-
-        return ($case1 != $case2) || ($case3 != $case4);
+        return $case1 == false && $case2 == false;
     }
 
     //Gets Departure and Arrival timestamps for a given slot

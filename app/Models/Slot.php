@@ -73,6 +73,12 @@ class Slot extends Model
         return SlotController::getSlotTimestamps($this);
     }
 
+    public function getTimestamps()
+    {
+        if(!$this->origin || !$this->destination) return [0,0];
+        return SlotController::getSlotTimestamps($this);
+    }
+
     public function aircraftData()
     {
         return $this->hasOne(Aircraft::class, 'icao', 'aircraft');
