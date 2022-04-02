@@ -21,7 +21,6 @@ class EventController extends Controller
 
     public function create(Request $request)
     {
-        $this->authorize('create', Event::class);
 
         $this->validate($request, [
             'atcBooking' => 'required|url',
@@ -40,11 +39,13 @@ class EventController extends Controller
 
         $user = Auth::user();
 
-        $dateStart = new DateTime();
-        $dateEnd = new DateTime();
+        $dateStart = new Carbon();
+        $dateEnd = new Carbon();
 
         $dateStart->setTimestamp($request->input('dateStart'));
         $dateEnd->setTimestamp($request->input('dateEnd'));
+
+        $this->authorize('create', [$dateStart, $dateEnd]);
 
         $event = new Event();
 
