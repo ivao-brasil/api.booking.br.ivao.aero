@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Cache;
 class AirportController extends Controller
 {
     const AIRPORT_DETAILS_CACHE_KEY_PREFIX = 'airport_details';
+    const ONE_DEGREE_IN_MILE = '60';
 
     private $hqApi;
 
@@ -37,23 +38,19 @@ class AirportController extends Controller
     }
 
 
-    //This gets the great circle distance between two airports, in nautical miles
-    public static function getFlightDistance(string $origin, string $destination)
-    {
 
+    public static function getCircleDistanceBetweenAirports(string $origin, string $destination)
+    {
         $origin = AirportController::getAirportByICAO($origin);
         $destination = AirportController::getAirportByICAO($destination);
 
         $latDistance = AirportController::getLatDistance($origin['latitude'], $destination['latitude']);
         $lonDistance = AirportController::getLonDistance($origin['longitude'], $destination['longitude']);
 
-        //Applies pythagorean theorem to find out the distance in degrees.
         $distance = sqrt( ($latDistance*$latDistance) + ($lonDistance*$lonDistance) );
 
-        //Converts degrees into miles
-        $distance = $distance * 60;
+        $distance = $distance * AirportController::ONE_DEGREE_IN_MILE;
 
-        //Returns the rounded value
         return round($distance);
     }
 

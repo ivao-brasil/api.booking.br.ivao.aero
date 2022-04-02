@@ -64,7 +64,7 @@ class Slot extends Model
     public function getDistanceAttribute()
     {
         if(!$this->origin || !$this->destination) return 0;
-        return AirportController::getFlightDistance($this->origin, $this->destination);
+        return AirportController::getCircleDistanceBetweenAirports($this->origin, $this->destination);
     }
 
     public function getTimestampsAttribute()

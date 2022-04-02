@@ -395,7 +395,7 @@ class SlotController extends Controller
     }
 
     public static function getFlightTime($slot){
-        $distance = AirportController::getFlightDistance($slot->origin, $slot->destination);
+        $distance = AirportController::getCircleDistanceBetweenAirports($slot->origin, $slot->destination);
         return AircraftController::getFlightTimeFromICAO($slot->aircraft, $distance);
     }
 
