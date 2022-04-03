@@ -836,6 +836,34 @@
                 }
             }
         },
+        "/event/{eventId}/slot/overlapping": {
+            "get": {
+                "tags": [
+                    "Slot"
+                ],
+                "summary": "Gets a list of booked slots which are overlapping, grouped by pilotid",
+                "security": [
+                    {
+                        "authentication": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of slots grouped by pilot",
+                        "content": {
+                            "application/json": {
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "User not authenticated"
+                    },
+                    "403": {
+                        "description": "Invalid permissions"
+                    }
+                }
+            }
+        },
         "/slot/{slotId}": {
             "delete": {
                 "summary": "Delete a given slot",
