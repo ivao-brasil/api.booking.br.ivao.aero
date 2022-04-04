@@ -346,6 +346,10 @@ class SlotController extends Controller
             return [User::where('id', $pilotId)->first()->vid => $slotList];
         });
 
+        $pilots = $pilots->filter( function ($slotList, $pilotId) {
+            return count($slotList) > 0;
+        });
+
         return $pilots;
     }
 
