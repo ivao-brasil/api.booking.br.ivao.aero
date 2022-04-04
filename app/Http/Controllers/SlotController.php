@@ -336,7 +336,7 @@ class SlotController extends Controller
                               ->groupBy('pilotId');
 
         $pilots = $pilots->mapWithKeys( function($slotList, $pilotId) {
-            $slotList = $slotList->reject( function($slotOne) use ($slotList) {
+            $slotList = $slotList->filter( function($slotOne) use ($slotList) {
                 foreach($slotList as $slotTwo) {
                     if($slotOne->id == $slotTwo->id) continue;
                     return SlotController::checkOverlappingSlots($slotOne, $slotTwo);
