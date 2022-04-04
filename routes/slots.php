@@ -21,6 +21,7 @@ $router->group(['middleware' => 'auth', 'prefix' => '/event/{eventId}/slot'], fu
     $router->post('/many', 'SlotController@createMany');
     $router->get('/mine', 'SlotController@getMySlots');
     $router->get('/count', 'SlotController@getEventSlotCountByType');
+    $router->get('/overlapping', 'SlotController@listOverlappingSlots');
 });
 
 $router->group(['middleware' => 'auth', 'prefix' => '/slot'], function () use ($router) {

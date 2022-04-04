@@ -77,4 +77,13 @@ class SlotPolicy
 
         return true;
     }
+
+    public function listOverlapping(User $user)
+    {
+        if (!$user->admin) {
+            return Response::deny("admin.noAdmin");
+        }
+
+        return true;
+    }
 }
