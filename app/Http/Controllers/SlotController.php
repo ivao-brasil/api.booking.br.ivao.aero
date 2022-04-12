@@ -326,6 +326,33 @@ class SlotController extends Controller
         ]);
     }
 
+    public function listOverlappingSlots($eventId)
+    {
+        $this->authorize('listOverlapping', Slot::class);
+
+        $event = Event::where('id', $eventId)->first();
+
+        $pilots = $event->slots->where('bookingStatus', '!=', 'free')
+                              ->groupBy('pilotId');
+
+        $pilots = $pilots->mapWithKeys( function($slotList, $pilotId) {
+            $slotList = $slotList->filter( function($slotOne) use ($slotList) {
+                foreach($slotList as $slotTwo) {
+                    if($slotOne->id == $slotTwo->id) continue;
+                    return SlotController::checkOverlappingSlots($slotOne, $slotTwo);
+                }
+            });
+
+            return [User::where('id', $pilotId)->first()->vid => $slotList];
+        });
+
+        $pilots = $pilots->filter( function ($slotList, $pilotId) {
+            return count($slotList) > 0;
+        });
+
+        return $pilots;
+    }
+
     /*
      *  Checks if two slots are overlapping
      */
