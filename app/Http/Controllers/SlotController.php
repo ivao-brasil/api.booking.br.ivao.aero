@@ -309,10 +309,12 @@ class SlotController extends Controller
     public function getEventSlotCountByType(string $eventId) {
         $takeoffCount = Slot::where('eventId', $eventId)
             ->where('type', 'takeoff')
+            ->where('private', 0)
             ->count();
 
         $landingCount = Slot::where('eventId', $eventId)
             ->where('type', 'landing')
+            ->where('private', 0)
             ->count();
 
         $privateCount = Slot::where('eventId', $eventId)
