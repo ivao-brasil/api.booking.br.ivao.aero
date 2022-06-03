@@ -28,7 +28,7 @@ class AirportController extends Controller
         });
     }
 
-    public static function getCircleDistanceBetweenAirports(string $origin, string $destination)
+    public static function getCircleDistanceBetweenAirports(string $origin = "", string $destination = "")
     {
         if(!$origin || !$destination)
             return 1;
