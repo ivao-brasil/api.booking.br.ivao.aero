@@ -96,6 +96,12 @@ class SlotController extends Controller
                     'aircraft' => 'required|string|max:4',
                 ]);
 
+                if(!AirportController::getAirportByICAO($request->input('origin')))
+                    abort(418, "airport.originNotFound");
+
+                if(!AirportController::getAirportByICAO($request->input('destination')))
+                    abort(418, "airport.destinationNotFound");
+
                 //TODO: This is another instance of the ->count() need (just like the SlotPolicy).
                 if($slot->event->slots->where('flightNumber', $request->input('flightNumber'))->count() > 0){
                     abort(403, "book.duplicateNumber");

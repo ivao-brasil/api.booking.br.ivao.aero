@@ -8,12 +8,16 @@ class HQAPIService
     const DEFAULT_ENDPOINT = 'https://api.ivao.aero/v2';
 
     public function getAirportDataByIcao($airportIcao) {
-        $endpoint = $this->getApiEndpoint() . "/airports/$airportIcao";
-        $response = Http::withHeaders($this->getAuthHeaders())->get($endpoint);
+        
+        try {
+            $endpoint = $this->getApiEndpoint() . "/airports/$airportIcao";
+            $response = Http::withHeaders($this->getAuthHeaders())->get($endpoint);
+    
+            $response->throw()->json();
+        } catch (Exception $e) {
+            return abort(418, "airport.notFound");
+        }
 
-        $response->throw();
-
-        return $response->json();
     }
 
     private function getAuthHeaders() {
