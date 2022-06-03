@@ -14,7 +14,7 @@ class HQAPIService
             $endpoint = $this->getApiEndpoint() . "/airports/$airportIcao";
             $response = Http::withHeaders($this->getAuthHeaders())->get($endpoint);
     
-            $response->throw()->json();
+            return $response->throw()->json();
         } catch (Exception $e) {
             return abort(418, "airport.notFound");
         }
