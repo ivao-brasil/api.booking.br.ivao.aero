@@ -18,15 +18,6 @@ class AirportController extends Controller
         $this->hqApi = $hqApi;
     }
 
-    public function getDetails(string $icao) {
-        $cacheKey = AirportController::AIRPORT_DETAILS_CACHE_KEY_PREFIX . "_$icao";
-        $cacheTtl = Carbon::now()->addMonth();
-
-        return Cache::remember($cacheKey, $cacheTtl, function () use ($icao) {
-            return $this->hqApi->getAirportDataByIcao($icao);
-        });
-    }
-
     public static function getAirportByICAO(string $icao) {
         $cacheKey = AirportController::AIRPORT_DETAILS_CACHE_KEY_PREFIX . "_$icao";
         $cacheTtl = Carbon::now()->addMonth();
@@ -36,8 +27,6 @@ class AirportController extends Controller
             return $hqApi->getAirportDataByIcao($icao);
         });
     }
-
-
 
     public static function getCircleDistanceBetweenAirports(string $origin, string $destination)
     {
