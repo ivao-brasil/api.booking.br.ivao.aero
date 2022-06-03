@@ -30,6 +30,8 @@ class AirportController extends Controller
 
     public static function getCircleDistanceBetweenAirports(string $origin, string $destination)
     {
+        if(!$origin || !$destination)
+            return 1;
         $origin = AirportController::getAirportByICAO($origin);
         $destination = AirportController::getAirportByICAO($destination);
 
