@@ -58,7 +58,7 @@ class Slot extends Model
     public function getFlightTimeAttribute()
     {
         if(!$this->aircraft) return 0;
-        return AircraftController::getFlightTimeFromICAO($this->aircraft, $this->getDistanceAttribute());
+        return AircraftController::getFlightTimeFromICAO($this->aircraft, $this->distance);
     }
 
     public function getDistanceAttribute()
