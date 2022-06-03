@@ -38,6 +38,8 @@ class Slot extends Model
         'destination'
     ];
 
+    protected $appends = ['flight_time', 'distance', 'timestamps'];
+
     public function owner()
     {
         return $this->belongsTo(User::class, 'pilotId', 'id');
