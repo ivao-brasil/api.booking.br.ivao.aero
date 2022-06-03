@@ -75,7 +75,7 @@ class Slot extends Model
 
     public function getTimestamps()
     {
-        if(!$this->origin || !$this->destination) return [1,1]
+        if(!$this->origin || !$this->destination) return [1,1];
         return SlotController::getSlotTimestamps($this);
     }
 
