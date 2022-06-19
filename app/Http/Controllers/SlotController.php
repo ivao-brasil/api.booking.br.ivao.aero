@@ -107,18 +107,7 @@ class SlotController extends Controller
             /** @var \App\Models\Event */
             $slotEvent = $slot->event;
 
-            /** @var \Carbon\Carbon */
-            $eventStartDate = $slotEvent->dateStart;
-            $now = Carbon::now();
-
-            $hoursBeforeStart = $now->diffInHours($eventStartDate, false);
-            $ignoreConfirmationHours = config('app.slot.ignore_slot_confirmation_hours');
-
-            if ($now->lessThanOrEqualTo($eventStartDate) && $ignoreConfirmationHours >= $hoursBeforeStart) {
-                $slot->bookingStatus = 'booked';
-            } else {
-                $slot->bookingStatus = 'prebooked';
-            }
+            $slot->bookingStatus = $slotEvent->can_auto_book ? 'booked' : 'prebooked';
 
             //Cycle through the user slots and checks for overlapping slots.
             foreach($user->slotsBooked->where('eventId', $slot->event->id) as $bookedSlot) {

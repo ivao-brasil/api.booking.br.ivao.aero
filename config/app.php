@@ -10,7 +10,7 @@ return [
     |
     */
     'slot' => [
-        'days_before_event_to_confirm' => 7,
-        'ignore_slot_confirmation_hours' => 24
+        'before_event_to_confirm_days' => 7,
+        'ignore_slot_confirmation_days' => 7
     ]
 ];
