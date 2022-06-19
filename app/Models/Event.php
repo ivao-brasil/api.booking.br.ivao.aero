@@ -8,8 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Event extends Model
 {
-    public const FLIGHT_CONFIRM_MAX_DAYS_BEFORE = 7;
-
     protected $fillable = [
         'division',
         'dateStart',
@@ -88,15 +86,44 @@ class Event extends Model
             return false;
         }
 
+        $diffInDays = $this->getEventStartRemaningDays();
+        $flightConfirmMaxDaysBefore = $this->getFlightConfirmMaxDaysBefore();
+        return $flightConfirmMaxDaysBefore >= $diffInDays;
+    }
+
+    public function getCanAutoBookAttribute()
+    {
+        if (!$this->can_confirm_slots) {
+            return false;
+        }
+
+        $diffInDays = $this->getEventStartRemaningDays();
+        $ignoreConfirmationHours = $this->getIgnoreSlotConfirmationDays();
+
+        if (!$ignoreConfirmationHours) {
+            return false;
+        }
+
+        return $ignoreConfirmationHours >= $diffInDays;
+    }
+
+    public function getFlightConfirmMaxDaysBefore(): int
+    {
+        return config('app.slot.before_event_to_confirm_days') ?: 7;
+    }
+
+    public function getIgnoreSlotConfirmationDays(): ?int
+    {
+        return config('app.slot.ignore_slot_confirmation_days');
+    }
+
+    private function getEventStartRemaningDays(): int
+    {
         $today = Carbon::now();
+        /** @var \Carbon\Carbon */
         $startDate = $this->dateStart;
         $diffInDays = $today->diffInDays($startDate);
 
-        return Event::FLIGHT_CONFIRM_MAX_DAYS_BEFORE >= $diffInDays;
-    }
-
-    public function getFlightConfirmMaxDaysBefore()
-    {
-        return config('app.slot.days_before_event_to_confirm') ?: Event::FLIGHT_CONFIRM_MAX_DAYS_BEFORE;
+        return $diffInDays;
     }
 }

@@ -6,7 +6,6 @@ use App\Models\Event;
 use App\Models\EventAirport;
 use App\Services\PaginationService;
 use Carbon\Carbon;
-use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 

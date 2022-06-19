@@ -2,6 +2,7 @@
 
 use App\Models\Event;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Config;
 
 class EventModelTest extends TestCase
 {
@@ -14,6 +15,9 @@ class EventModelTest extends TestCase
 
         $this->testTodayDate = $this->getTestBaseDate();
         Carbon::setTestNow($this->testTodayDate);
+
+        Config::set('app.slot.before_event_to_confirm_days', 7);
+        Config::set('app.slot.ignore_slot_confirmation_days', 7);
 
         $this->testEvent = new Event();
     }
@@ -48,6 +52,23 @@ class EventModelTest extends TestCase
         $this->assertEquals($expected, $this->testEvent->can_confirm_slots);
     }
 
+    /**
+     * @dataProvider getDataForTestGetCanAutoBookAttribute
+     */
+    public function testGetCanAutoBookAttribute(
+        Carbon $startDate,
+        int $beforeEventConfirmDays,
+        ?int $ignoreSlotConfirmationDays,
+        bool $expected
+    ) {
+        Config::set('app.slot.before_event_to_confirm_days', $beforeEventConfirmDays);
+        Config::set('app.slot.ignore_slot_confirmation_days', $ignoreSlotConfirmationDays);
+
+        $this->testEvent->dateStart = $startDate;
+
+        $this->assertEquals($expected, $this->testEvent->can_auto_book);
+    }
+
     public function getDataForTestGetHasStartedAttribute()
     {
         return [
@@ -70,13 +91,22 @@ class EventModelTest extends TestCase
 
     public function getDataForTestGetCanConfirmSlotsAttribute()
     {
-        $minConfirmDays = Event::FLIGHT_CONFIRM_MAX_DAYS_BEFORE;
-
         return [
-            [$this->getTestBaseDate()->copy()->addDays($minConfirmDays * 2), false],
+            [$this->getTestBaseDate()->copy()->addDays(14), false],
             [$this->getTestBaseDate()->copy()->addMinute(), true],
             [$this->getTestBaseDate()->copy()->subMonth(), false],
-            [$this->getTestBaseDate()->copy()->addDays($minConfirmDays), true]
+            [$this->getTestBaseDate()->copy()->addDays(7), true]
+        ];
+    }
+
+    public function getDataForTestGetCanAutoBookAttribute()
+    {
+        return [
+            [$this->getTestBaseDate()->copy()->addDays(14), 7, 1, false],
+            [$this->getTestBaseDate()->copy()->addMinute(), 7, 1, true],
+            [$this->getTestBaseDate()->copy()->addMinute(), 7, null, false],
+            [$this->getTestBaseDate()->copy()->subMonth(), 7, 5, false],
+            [$this->getTestBaseDate()->copy()->addDays(7), 7, 7, true]
         ];
     }
 
