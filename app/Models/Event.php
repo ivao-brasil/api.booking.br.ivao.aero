@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Database\Factories\EventFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Event extends Model
 {
+    public const FLIGHT_CONFIRM_MAX_DAYS_BEFORE = 7;
 
     protected $fillable = [
         'division',
@@ -39,7 +41,11 @@ class Event extends Model
         'dateEnd'
     ];
 
-    protected $appends = ['has_started', 'has_ended'];
+    protected $appends = [
+        'has_started',
+        'has_ended',
+        'can_confirm_slots'
+    ];
 
     public function creator()
     {
@@ -68,11 +74,29 @@ class Event extends Model
 
     public function getHasStartedAttribute()
     {
-        return strtotime($this->dateStart) < time();
+        return $this->dateStart->isPast();
     }
 
     public function getHasEndedAttribute()
     {
-        return strtotime($this->dateEnd) < time();
+        return $this->dateEnd->isPast();
+    }
+
+    public function getCanConfirmSlotsAttribute()
+    {
+        if ($this->has_started) {
+            return false;
+        }
+
+        $today = Carbon::now();
+        $startDate = $this->dateStart;
+        $diffInDays = $today->diffInDays($startDate);
+
+        return Event::FLIGHT_CONFIRM_MAX_DAYS_BEFORE >= $diffInDays;
+    }
+
+    public function getFlightConfirmMaxDaysBefore()
+    {
+        return config('app.slot.days_before_event_to_confirm') ?: Event::FLIGHT_CONFIRM_MAX_DAYS_BEFORE;
     }
 }
