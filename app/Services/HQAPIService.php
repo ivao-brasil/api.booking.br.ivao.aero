@@ -2,20 +2,21 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
-use Exception;
+use Illuminate\Support\Facades\Log;
 
 class HQAPIService
 {
     const DEFAULT_ENDPOINT = 'https://api.ivao.aero/v2';
 
     public function getAirportDataByIcao($airportIcao) {
-        
+
         try {
             $endpoint = $this->getApiEndpoint() . "/airports/$airportIcao";
             $response = Http::withHeaders($this->getAuthHeaders())->get($endpoint);
-    
+
             return $response->throw()->json();
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
+            Log::critical($e, ['icao' => $airportIcao]);
             return abort(418, "airport.notFound");
         }
 
