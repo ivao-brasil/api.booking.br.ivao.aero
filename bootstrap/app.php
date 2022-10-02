@@ -93,7 +93,7 @@ $app->routeMiddleware([
 |
 */
 
-// $app->register(App\Providers\AppServiceProvider::class);
+$app->register(App\Providers\AppServiceProvider::class);
 $app->register(App\Providers\AuthServiceProvider::class);
 // $app->register(App\Providers\EventServiceProvider::class);
 
@@ -109,7 +109,7 @@ $app->register(App\Providers\AuthServiceProvider::class);
 */
 
 $app->router->group([
-    'namespace' => 'App\Http\Controllers',
+    'namespace' => 'App\Http\Controllers'
 ], function (Router $router) {
     require __DIR__ . '/../routes/auth.php';
     require __DIR__ . '/../routes/events.php';

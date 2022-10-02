@@ -6,3 +6,5 @@ Homestead.yaml
 .env
 .phpunit.result.cache
 .docker/mysql
+_ide_helper.php
+.phpstorm.meta.php
