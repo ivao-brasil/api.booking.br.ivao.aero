@@ -1,9 +1,6 @@
 <?php
 
 use App\Contracts\CSVFileServiceInterface;
-use App\Contracts\Data\EventRepositoryInterface;
-use App\Http\Controllers\EventDataExporter;
-use App\Models\Event;
 use App\Services\CSVFileService;
 use ParseCsv\Csv;
 use PHPUnit\Framework\MockObject\MockObject;

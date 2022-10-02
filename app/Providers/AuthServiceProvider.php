@@ -5,7 +5,7 @@ namespace App\Providers;
 use App\Models\Event;
 use App\Models\Scenery;
 use App\Models\User;
-use App\Policies\EventDataExport;
+use App\Policies\EventDataExportPolicy;
 use App\Policies\EventPolicy;
 use App\Policies\SceneryPolicy;
 use App\Policies\SlotPolicy;
@@ -31,7 +31,7 @@ class AuthServiceProvider extends ServiceProvider
         Gate::policy(Event::class, EventPolicy::class);
         Gate::policy(Slot::class, SlotPolicy::class);
         Gate::policy(Scenery::class, SceneryPolicy::class);
-        Gate::policy(Event::class, EventDataExport::class);
+        Gate::policy(Event::class, EventDataExportPolicy::class);
 
         $this->app['auth']->viaRequest('api', function ($request) {
             if ($request->header('Authorization')) {

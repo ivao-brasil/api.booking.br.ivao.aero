@@ -6,6 +6,7 @@ use App\Contracts\CSVFileServiceInterface;
 use App\Contracts\Data\EventRepositoryInterface;
 use App\Models\Event;
 use App\Models\Slot;
+use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Support\Collection;
 
 class EventDataExporterController extends Controller
@@ -25,13 +26,16 @@ class EventDataExporterController extends Controller
 
     private EventRepositoryInterface $eventRepository;
     private CSVFileServiceInterface $CSVFileService;
+    private Gate $gate;
 
     public function __construct(
         EventRepositoryInterface $eventRepository,
-        CSVFileServiceInterface $CSVFileService
+        CSVFileServiceInterface $CSVFileService,
+        Gate $gate
     ) {
         $this->eventRepository = $eventRepository;
         $this->CSVFileService = $CSVFileService;
+        $this->gate = $gate;
     }
 
     /**
@@ -44,7 +48,7 @@ class EventDataExporterController extends Controller
     {
         $event = $this->eventRepository->getById($id);
 
-        $this->authorize('export', $event);
+        $this->gate->authorize('export', $event);
 
         $eventSlots = $this->getEventSlots($event);
         $slotsArray = $this->convertSlotsCollectionToArray($eventSlots);

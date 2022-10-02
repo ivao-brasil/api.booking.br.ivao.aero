@@ -8,6 +8,7 @@ use App\Models\Slot;
 use Illuminate\Database\Eloquent\Collection;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Illuminate\Contracts\Auth\Access\Gate;
 
 class EventDataExporterControllerControllerTest extends TestCase
 {
@@ -17,6 +18,9 @@ class EventDataExporterControllerControllerTest extends TestCase
     /** @var CSVFileServiceInterface&MockObject */
     private $CSVFileService;
 
+    /** @var Gate&MockObject */
+    private $gate;
+
     private EventDataExporterController $EventDataExporterController;
 
     protected function setUp(): void
@@ -25,10 +29,12 @@ class EventDataExporterControllerControllerTest extends TestCase
 
         $this->eventRepository = $this->createMock(EventRepositoryInterface::class);
         $this->CSVFileService = $this->createMock(CSVFileServiceInterface::class);
+        $this->gate = $this->createMock(Gate::class);
 
         $this->EventDataExporterController = new EventDataExporterController(
             $this->eventRepository,
-            $this->CSVFileService
+            $this->CSVFileService,
+            $this->gate
         );
     }
 
@@ -42,6 +48,8 @@ class EventDataExporterControllerControllerTest extends TestCase
         $testId = 1;
         $testCsvOutput = 'field1;field2\na;b\nc;d';
         $testEvent = $this->getTestEventWithSlots();
+
+        $this->prepareAuthorizations();
 
         $this->eventRepository
             ->expects($this->once())
@@ -74,6 +82,8 @@ class EventDataExporterControllerControllerTest extends TestCase
         /** @var Collection&MockObject */
         $collection = $this->createMock(Collection::class);
 
+        $event->has_ended = true;
+
         $collection
             ->method('loadMissing')
             ->willReturnSelf();
@@ -92,5 +102,16 @@ class EventDataExporterControllerControllerTest extends TestCase
         $event->slots = $collection;
 
         return $event;
+    }
+
+    private function prepareAuthorizations(): void
+    {
+        $this->gate
+            ->expects($this->once())
+            ->method('authorize')
+            ->with(
+                $this->equalTo('export'),
+                $this->isInstanceOf(Event::class)
+            );
     }
 }
