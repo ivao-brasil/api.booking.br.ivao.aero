@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Contracts\CSVFileServiceInterface;
+use App\Services\CSVFileService;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -17,5 +19,7 @@ class AppServiceProvider extends ServiceProvider
             $this->app->register(\Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class);
             $this->app->register(\Flipbox\LumenGenerator\LumenGeneratorServiceProvider::class);
         }
+
+        $this->app->bind(CSVFileServiceInterface::class, CSVFileService::class);
     }
 }

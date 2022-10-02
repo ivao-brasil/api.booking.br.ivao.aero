@@ -9,11 +9,12 @@ use Illuminate\Support\ServiceProvider;
 class RepositoryServiceProvider extends ServiceProvider
 {
     /**
-     * All of the container bindings that should be registered.
+     * Register any application services.
      *
-     * @var array
+     * @return void
      */
-    public $bindings = [
-        EventRepositoryInterface::class => EventRepository::class,
-    ];
+    public function register()
+    {
+        $this->app->bind(EventRepositoryInterface::class, EventRepository::class);
+    }
 }

@@ -22,5 +22,5 @@ $router->group(['middleware' => 'auth', 'prefix' => 'event'], function() use($ro
     $router->get('/{id}', 'EventController@getSingle');
     $router->put('/{id}', 'EventController@update');
     $router->delete('/{id}', 'EventController@delete');
-    $router->get('/{id}/export', [EventDataExporter::class]);
+    $router->get('/{id}/export', 'EventDataExporterController@__invoke');
 });

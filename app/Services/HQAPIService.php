@@ -17,7 +17,7 @@ class HQAPIService
             return $response->throw()->json();
         } catch (Exception $e) {
             report($e);
-            return abort(418, "airport.notFound");
+            return abort(500, "airport.notFound");
         }
 
     }

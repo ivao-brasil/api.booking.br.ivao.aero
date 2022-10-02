@@ -2,14 +2,14 @@
 
 use App\Contracts\CSVFileServiceInterface;
 use App\Contracts\Data\EventRepositoryInterface;
-use App\Http\Controllers\EventDataExporter;
+use App\Http\Controllers\EventDataExporterController;
 use App\Models\Event;
 use App\Models\Slot;
-use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Collection;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-class EventDataExporterTest extends TestCase
+class EventDataExporterControllerControllerTest extends TestCase
 {
     /** @var EventRepositoryInterface&MockObject */
     private $eventRepository;
@@ -17,10 +17,7 @@ class EventDataExporterTest extends TestCase
     /** @var CSVFileServiceInterface&MockObject */
     private $CSVFileService;
 
-    /** @var Event&MockObject */
-    private $event;
-
-    private EventDataExporter $eventDataExporter;
+    private EventDataExporterController $EventDataExporterController;
 
     protected function setUp(): void
     {
@@ -28,9 +25,8 @@ class EventDataExporterTest extends TestCase
 
         $this->eventRepository = $this->createMock(EventRepositoryInterface::class);
         $this->CSVFileService = $this->createMock(CSVFileServiceInterface::class);
-        $this->event = $this->getModelMock(Event::class);
 
-        $this->eventDataExporter = new EventDataExporter(
+        $this->EventDataExporterController = new EventDataExporterController(
             $this->eventRepository,
             $this->CSVFileService
         );
@@ -38,32 +34,30 @@ class EventDataExporterTest extends TestCase
 
     public function testCreateClass()
     {
-        $this->assertInstanceOf(EventDataExporter::class, $this->eventDataExporter);
+        $this->assertInstanceOf(EventDataExporterController::class, $this->EventDataExporterController);
     }
 
     public function testCanExportEventData()
     {
         $testId = 1;
-        $testSlots = $this->getTestSlotCollection();
         $testCsvOutput = 'field1;field2\na;b\nc;d';
-
-        $this->event->slots = $testSlots;
+        $testEvent = $this->getTestEventWithSlots();
 
         $this->eventRepository
             ->expects($this->once())
             ->method('getById')
-            ->willReturn($this->event);
+            ->willReturn($testEvent);
 
         $this->CSVFileService
             ->expects($this->once())
             ->method('convertArrayToCSV')
             ->with(
                 $this->anything(),
-                $this->equalTo($testSlots->toArray())
+                $this->callback(fn ($subject) => is_array($subject))
             )
             ->willReturn($testCsvOutput);
 
-        $result = $this->eventDataExporter->__invoke($testId);
+        $result = $this->EventDataExporterController->__invoke($testId);
 
         $this->assertInstanceOf(StreamedResponse::class, $result);
     }
@@ -71,16 +65,32 @@ class EventDataExporterTest extends TestCase
     /**
      * Get a slot collection to use in tests
      *
-     * @return \Illuminate\Database\Eloquent\Collection|\App\Models\Slot[]
+     * @return Event
      */
-    private function getTestSlotCollection()
+    private function getTestEventWithSlots(): Event
     {
-        $collection = new Slot();
-        $collection->newCollection([
-            new Slot([ 'origin' => 'a', 'destionation' => 'b' ]),
-            new Slot([ 'origin' => 'c', 'destionation' => 'd' ]),
-        ]);
+        /** @var Event&MockObject */
+        $event = $this->getModelMock(Event::class);
+        /** @var Collection&MockObject */
+        $collection = $this->createMock(Collection::class);
 
-        return $collection;
+        $collection
+            ->method('loadMissing')
+            ->willReturnSelf();
+
+        $collection
+            ->method('map')
+            ->willReturnSelf();
+
+        $collection
+            ->method('toArray')
+            ->willReturn([
+                new Slot([ 'origin' => 'a', 'destionation' => 'b' ]),
+                new Slot([ 'origin' => 'c', 'destionation' => 'd' ]),
+            ]);
+
+        $event->slots = $collection;
+
+        return $event;
     }
 }

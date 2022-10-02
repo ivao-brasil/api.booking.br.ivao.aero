@@ -4,9 +4,25 @@ namespace App\Http\Controllers;
 
 use App\Contracts\CSVFileServiceInterface;
 use App\Contracts\Data\EventRepositoryInterface;
+use App\Models\Event;
+use App\Models\Slot;
+use Illuminate\Support\Collection;
 
-class EventDataExporter extends Controller
+class EventDataExporterController extends Controller
 {
+    /** @var string[] */
+    private const CSV_COLUMNS = [
+        'id',
+        'flightNumber',
+        'origin',
+        'destination',
+        'private',
+        'slotTime',
+        'gate',
+        'aircraft',
+        'owner'
+    ];
+
     private EventRepositoryInterface $eventRepository;
     private CSVFileServiceInterface $CSVFileService;
 
@@ -27,8 +43,9 @@ class EventDataExporter extends Controller
     public function __invoke(int $id)
     {
         $event = $this->eventRepository->getById($id);
-        $eventSlots = $event->slots->toArray();
-        $csvString = $this->CSVFileService->convertArrayToCSV(['a', 'b'], $eventSlots);
+        $eventSlots = $this->getEventSlots($event);
+        $slotsArray = $this->convertSlotsCollectionToArray($eventSlots);
+        $csvString = $this->CSVFileService->convertArrayToCSV(self::CSV_COLUMNS, $slotsArray);
 
         $callback = function () use ($csvString) {
             $fileStream = fopen('php://output', 'w');
@@ -45,7 +62,26 @@ class EventDataExporter extends Controller
         );
     }
 
-    private function getFileResponseHeaders($filename)
+    private function getEventSlots(Event $event): Collection
+    {
+        $slotCollection = $event->slots->loadMissing('owner');
+        return $slotCollection;
+    }
+
+    private function convertSlotsCollectionToArray(Collection $slots): array
+    {
+        $result = $slots->map(function (Slot $slot) {
+            $ownerVid = $slot->owner->vid ?? null;
+            $result = $slot->toArray();
+            $result['owner'] = $ownerVid;
+
+            return $result;
+        });
+
+        return $result->toArray();
+    }
+
+    private function getFileResponseHeaders($filename): array
     {
         return [
             'Cache-Control'       => 'must-revalidate, post-check=0, pre-check=0',
