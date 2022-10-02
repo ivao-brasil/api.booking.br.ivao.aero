@@ -43,20 +43,17 @@ class EventDataExporterController extends Controller
     public function __invoke(int $id)
     {
         $event = $this->eventRepository->getById($id);
+
+        $this->authorize('export', $event);
+
         $eventSlots = $this->getEventSlots($event);
         $slotsArray = $this->convertSlotsCollectionToArray($eventSlots);
         $csvString = $this->CSVFileService->convertArrayToCSV(self::CSV_COLUMNS, $slotsArray);
 
-        $callback = function () use ($csvString) {
-            $fileStream = fopen('php://output', 'w');
-            fwrite($fileStream, $csvString);
-            fclose($fileStream);
-        };
-
         $fileName = "event_$id.csv";
 
         return response()->stream(
-            $callback,
+            fn() => $this->writeCSVDataStream($csvString),
             200,
             $this->getFileResponseHeaders($fileName)
         );
@@ -86,9 +83,16 @@ class EventDataExporterController extends Controller
         return [
             'Cache-Control'       => 'must-revalidate, post-check=0, pre-check=0',
             'Content-type'        => 'text/csv',
-            'Content-Disposition' => 'attachment; filename='.$filename,
+            'Content-Disposition' => 'attachment; filename=' . $filename,
             'Expires'             => '0',
             'Pragma'              => 'public'
         ];
+    }
+
+    private function writeCSVDataStream(string $csvData): void
+    {
+        $fileStream = fopen('php://output', 'w');
+        fwrite($fileStream, $csvData);
+        fclose($fileStream);
     }
 }
