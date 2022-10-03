@@ -38,7 +38,24 @@ class Slot extends Model
         'destination'
     ];
 
-    protected $appends = ['flight_time', 'distance', 'timestamps'];
+    protected $appends = [
+        'flight_time',
+        'distance',
+        'timestamps'
+    ];
+
+    protected $casts = [
+        'bookingTime' => 'datetime:Y-m-d\TH:i:sP'
+    ];
+
+    /**
+     * The attributes that should be mutated to dates.
+     *
+     * @var array
+     */
+    protected $dates = [
+        'bookingTime'
+    ];
 
     public function owner()
     {
