@@ -5,9 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Services\IvaoLoginService;
 use App\Services\JwtService;
-use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
@@ -44,8 +42,8 @@ class AuthController extends Controller
                     'id' => $user['id']
                 ])
             ]);
-        } catch (Exception $e) {
-            report($e);
+        } catch (\Exception $e) {
+            Log::error($e);
             return response()->json(['error' => 'auth.error'], 403);
         }
     }
