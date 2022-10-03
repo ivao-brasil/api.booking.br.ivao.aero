@@ -2,7 +2,7 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
-use Exception;
+use Illuminate\Support\Facades\Log;
 
 class HQAPIService
 {
@@ -15,9 +15,9 @@ class HQAPIService
             $response = Http::withHeaders($this->getAuthHeaders())->get($endpoint);
 
             return $response->throw()->json();
-        } catch (Exception $e) {
-            report($e);
-            return abort(500, "airport.notFound");
+        } catch (\Exception $e) {
+            Log::critical($e, ['icao' => $airportIcao]);
+            return abort(418, "airport.notFound");
         }
 
     }
