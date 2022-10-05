@@ -1,4 +1,4 @@
-FROM php:7.3.22-apache-stretch
+FROM php:7.4-apache-buster
 
 
 RUN apt-get update -yqq && \
@@ -9,7 +9,7 @@ RUN apt-get update -yqq && \
     a2enmod rewrite && \
     docker-php-ext-install pdo_mysql && \
     docker-php-ext-install pgsql && \
-    docker-php-ext-configure zip --with-libzip && \
+    docker-php-ext-configure zip && \
     docker-php-ext-install zip && \
     pecl install xdebug && \
     docker-php-ext-enable xdebug && \
