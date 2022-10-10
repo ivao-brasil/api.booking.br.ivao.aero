@@ -46,24 +46,24 @@ class SlotPolicy
             return Response::deny("book.notActive");
         }
 
-        /** @var \Carbon\Carbon */
-        $eventEndDate = $slotEvent->dateEnd;
-        $now = Carbon::now();
+        if ($slotEvent->has_ended) {
+            return Response::deny("book.hasEnded");
+        }
 
-        if ($slot->bookingStatus === "prebooked" && $action === "confirm") {
-            /** @var \Carbon\Carbon */
-            $eventStartDate = $slotEvent->dateStart;
-            $diffFromStart = $now->diffInDays($eventStartDate, false);
+        if ($action === "confirm") {
+            if ($slot->bookingStatus !== "prebooked") {
+                return Response::deny("The slot is not prebooked", 400);
+            }
 
-            $maxDaysBeforeEvent = config('app.slot.days_before_event_to_confirm');
-
-            if ($eventStartDate->greaterThan($now) && $diffFromStart > $maxDaysBeforeEvent) {
-                return Response::deny("book.tooEarly.$maxDaysBeforeEvent");
+            if (!$slotEvent->can_confirm_slots) {
+                return Response::deny("book.tooEarly");
             }
         }
 
-        if ($now->greaterThan($eventEndDate)) {
-            return Response::deny("book.hasEnded");
+        if ($action === "book") {
+            if ($slotEvent->has_started) {
+                return Response::deny("book.hasStarted");
+            }
         }
 
         return true;

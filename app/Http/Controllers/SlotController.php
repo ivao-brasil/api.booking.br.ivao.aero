@@ -2,28 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Aircraft;
 use App\Models\Event;
 use App\Models\Slot;
 use App\Models\User;
 use App\Services\PaginationService;
 use Carbon\Carbon;
-use DateTime;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use ParseCsv\Csv;
-use Response;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
-use Illuminate\Support\Facades\Log;
 
 class SlotController extends Controller
 {
-
     private $paginationService;
-
 
     public function __construct(PaginationService $paginationService)
     {
@@ -77,12 +70,13 @@ class SlotController extends Controller
 
     public function book(Request $request, string $slotId, string $action)
     {
+        /** @var \App\Models\Slot|null */
         $slot = Slot::find($slotId);
         /** @var \App\Models\User|null */
         $user = Auth::user();
 
         if (!$slot) {
-            abort(404, 'book.notFound');
+            return abort(404, 'book.notFound');
         }
 
         $this->authorize('bookUpdate', [$slot, $action]);
@@ -112,24 +106,8 @@ class SlotController extends Controller
 
             /** @var \App\Models\Event */
             $slotEvent = $slot->event;
-            /** @var \Carbon\Carbon */
-            $eventStartDate = $slotEvent->dateStart;
-            $now = Carbon::now();
 
-
-            if ($now->greaterThan($eventStartDate)) {
-                abort(403, "book.hasStarted");
-            }
-
-
-            $hoursBeforeStart = $now->diffInHours($eventStartDate, false);
-            $ignoreConfirmationHours = config('app.slot.ignore_slot_confirmation_hours');
-
-            if ($now->lessThanOrEqualTo($eventStartDate) && $ignoreConfirmationHours >= $hoursBeforeStart) {
-                $slot->bookingStatus = 'booked';
-            } else {
-                $slot->bookingStatus = 'prebooked';
-            }
+            $slot->bookingStatus = $slotEvent->can_auto_book ? 'booked' : 'prebooked';
 
             //Cycle through the user slots and checks for overlapping slots.
             foreach($user->slotsBooked->where('eventId', $slot->event->id) as $bookedSlot) {
@@ -138,7 +116,7 @@ class SlotController extends Controller
                 }
             }
 
-            $slot->bookingTime = (new DateTime())->format("Y-m-d H:i:s");
+            $slot->bookingTime = Carbon::now();
 
             $user->slotsBooked()->save($slot);
         } else if ($action === "cancel") {
@@ -159,10 +137,6 @@ class SlotController extends Controller
             $slot->bookingStatus = 'free';
             $slot->save();
         } else if ($action === "confirm") {
-            if ($slot->bookingStatus !== "prebooked") {
-                abort(400, "The slot is not prebooked");
-            }
-
             $slot->bookingStatus = "booked";
             $slot->save();
         }

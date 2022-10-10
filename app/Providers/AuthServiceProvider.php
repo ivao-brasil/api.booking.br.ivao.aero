@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\Event;
 use App\Models\Scenery;
 use App\Models\User;
+use App\Policies\EventDataExportPolicy;
 use App\Policies\EventPolicy;
 use App\Policies\SceneryPolicy;
 use App\Policies\SlotPolicy;
@@ -14,15 +15,6 @@ use Illuminate\Support\ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     *
-     * @return void
-     */
-    public function register()
-    {
-        //
-    }
 
     /**
      * Boot the authentication services for the application.
@@ -39,6 +31,7 @@ class AuthServiceProvider extends ServiceProvider
         Gate::policy(Event::class, EventPolicy::class);
         Gate::policy(Slot::class, SlotPolicy::class);
         Gate::policy(Scenery::class, SceneryPolicy::class);
+        Gate::policy(Event::class, EventDataExportPolicy::class);
 
         $this->app['auth']->viaRequest('api', function ($request) {
             if ($request->header('Authorization')) {

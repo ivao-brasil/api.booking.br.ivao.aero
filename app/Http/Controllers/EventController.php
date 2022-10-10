@@ -6,7 +6,6 @@ use App\Models\Event;
 use App\Models\EventAirport;
 use App\Services\PaginationService;
 use Carbon\Carbon;
-use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -28,7 +27,7 @@ class EventController extends Controller
             'atcBriefing' => 'required|url',
             'banner' => 'required|url',
             'dateStart' => 'required|numeric',
-            'dateEnd' => 'required|numeric',
+            'dateEnd' => 'required|numeric|gt:dateStart',
             'description' => 'required|string',
             'eventName' => 'required|string|max:255',
             'pilotBriefing' => 'required|url',
@@ -46,8 +45,9 @@ class EventController extends Controller
         $dateStart->setTimestamp($request->input('dateStart'));
         $dateEnd->setTimestamp($request->input('dateEnd'));
 
-        if($dateStart->diffInHours($dateEnd) > 10)
+        if($dateStart->diffInHours($dateEnd) > 10) {
             return abort(403, 'event.tooLong');
+        }
 
         $event = new Event();
 
@@ -132,7 +132,7 @@ class EventController extends Controller
 
         $this->validate($request, [
             'dateStart' => 'required|numeric',
-            'dateEnd' => 'required|numeric',
+            'dateEnd' => 'required|numeric|gt:dateStart',
             'eventName' => 'required|string|max:255',
             'privateSlots' => 'required|boolean',
             'status' => 'required|string',
@@ -158,8 +158,9 @@ class EventController extends Controller
         $dateStart->setTimestamp($request->input('dateStart'));
         $dateEnd->setTimestamp($request->input('dateEnd'));
 
-        if($dateStart->diffInHours($dateEnd) > 10)
+        if($dateStart->diffInHours($dateEnd) > 10) {
             return abort(403, 'event.tooLong');
+        }
 
         $event->fill([
             'division' => $user->division,
