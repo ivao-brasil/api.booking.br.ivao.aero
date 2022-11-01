@@ -61,7 +61,7 @@ class SlotPolicy
         }
 
         if ($action === "book") {
-            if ($slotEvent->has_started) {
+            if ($slotEvent->has_started && !$slotEvent->allowBookingAfterStart) {
                 return Response::deny("book.hasStarted");
             }
         }
