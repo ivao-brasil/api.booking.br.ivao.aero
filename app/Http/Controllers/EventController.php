@@ -24,13 +24,13 @@ class EventController extends Controller
 
         $this->validate($request, [
             'atcBooking' => 'required|url',
-            'atcBriefing' => 'required|url',
+            'atcBriefing' => 'url',
             'banner' => 'required|url',
             'dateStart' => 'required|numeric',
             'dateEnd' => 'required|numeric|gt:dateStart',
             'description' => 'required|string',
             'eventName' => 'required|string|max:255',
-            'pilotBriefing' => 'required|url',
+            'pilotBriefing' => 'url',
             'privateSlots' => 'boolean',
             'publicAccess' => 'boolean',
             'airports' => 'required|string',
@@ -97,7 +97,9 @@ class EventController extends Controller
     public function get(Request $request)
     {
 
-        $events = Event::where('id', '>=', 1)
+        $events = Event::query()
+                    ->where('id', '>=', 1)
+                    ->orderBy('created_at', 'desc')
                     ->with('airports.sceneries');  //Specifies that we want to bring the airports, as well as the sceneries
 
 
@@ -136,8 +138,8 @@ class EventController extends Controller
             'eventName' => 'required|string|max:255',
             'privateSlots' => 'required|boolean',
             'status' => 'required|string',
-            'atcBriefing' => 'required|url',
-            'pilotBriefing' => 'required|url',
+            'atcBriefing' => 'url',
+            'pilotBriefing' => 'url',
             'description' => 'required|string',
             'banner' => 'required|url',
             'atcBooking' => 'required|url',

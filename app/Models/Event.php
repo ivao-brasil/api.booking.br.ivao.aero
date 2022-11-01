@@ -57,6 +57,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Event whereStatus($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Event whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Event whereUpdatedAt($value)
+ * @property bool $allowBookingAfterStart
+ * @method static \Illuminate\Database\Eloquent\Builder|Event whereAllowBookingAfterStart($value)
  * @mixin \Eloquent
  */
 class Event extends Model
@@ -74,7 +76,8 @@ class Event extends Model
         'description',
         'atcBooking',
         'banner',
-        'type'
+        'type',
+        'allowBookingAfterStart'
     ];
 
     protected $casts = [
@@ -135,6 +138,14 @@ class Event extends Model
 
     public function getCanConfirmSlotsAttribute(): bool
     {
+        if ($this->has_ended) {
+            return false;
+        }
+
+        if ($this->has_started && $this->allowBookingAfterStart) {
+            return true;
+        }
+
         if ($this->has_started) {
             return false;
         }

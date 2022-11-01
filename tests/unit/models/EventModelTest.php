@@ -48,8 +48,19 @@ class EventModelTest extends TestCase
     public function testGetCanConfirmSlotsAttribute(Carbon $startDate, bool $expected)
     {
         $this->testEvent->dateStart = $startDate;
+        $this->testEvent->dateEnd = $startDate->copy()->addMinute();
 
         $this->assertEquals($expected, $this->testEvent->can_confirm_slots);
+    }
+
+    public function testGetCanConfirmSlotsAttributeWithAlreadyStartedEvent()
+    {
+        $testEndDate = $this->getTestBaseDate()->copy()->addMinute();
+        $this->testEvent->dateStart = $this->getTestBaseDate();
+        $this->testEvent->dateEnd = $testEndDate;
+        $this->testEvent->allowBookingAfterStart = true;
+
+        $this->assertTrue($this->testEvent->can_confirm_slots);
     }
 
     /**
@@ -65,6 +76,7 @@ class EventModelTest extends TestCase
         Config::set('app.slot.ignore_slot_confirmation_days', $ignoreSlotConfirmationDays);
 
         $this->testEvent->dateStart = $startDate;
+        $this->testEvent->dateEnd = $startDate->copy()->addMinute();
 
         $this->assertEquals($expected, $this->testEvent->can_auto_book);
     }
