@@ -397,6 +397,12 @@
                     "Event"
                 ],
                 "summary": "Fetch a single Event",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path"
+                    }
+                ],
                 "security": [
                     {
                         "authentication": []
