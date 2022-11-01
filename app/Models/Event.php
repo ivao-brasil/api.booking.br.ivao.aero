@@ -57,9 +57,9 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Event whereStatus($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Event whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Event whereUpdatedAt($value)
- * @mixin \Eloquent
  * @property bool $allowBookingAfterStart
  * @method static \Illuminate\Database\Eloquent\Builder|Event whereAllowBookingAfterStart($value)
+ * @mixin \Eloquent
  */
 class Event extends Model
 {
