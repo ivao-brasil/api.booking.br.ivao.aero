@@ -97,7 +97,9 @@ class EventController extends Controller
     public function get(Request $request)
     {
 
-        $events = Event::where('id', '>=', 1)
+        $events = Event::query()
+                    ->where('id', '>=', 1)
+                    ->orderBy('created_at', 'desc')
                     ->with('airports.sceneries');  //Specifies that we want to bring the airports, as well as the sceneries
 
 
