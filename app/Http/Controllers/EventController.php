@@ -20,7 +20,11 @@ class EventController extends Controller
 
     public function create(Request $request)
     {
-        $this->authorize('create', Event::class);
+        //$this->authorize('create', Event::class);
+        
+        if(!Auth::user()->admin)
+            return abort(403, 'admin.notAdmin');
+
 
         $this->validate($request, [
             'atcBooking' => 'required|url',
@@ -152,7 +156,10 @@ class EventController extends Controller
             abort(404, 'event.notFound');
         }
 
-        $this->authorize('update', $event);
+        //$this->authorize('update', $event);
+
+        if(!Auth::user()->admin)
+            return abort(403, 'admin.notAdmin');
 
         $dateStart = new Carbon();
         $dateEnd = new Carbon();
