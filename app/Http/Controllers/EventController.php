@@ -158,8 +158,14 @@ class EventController extends Controller
 
         //$this->authorize('update', $event);
 
-        if(!Auth::user()->admin)
+        if(!$user->admin)
             return abort(401, 'admin.notAdmin');
+
+        if($event->status == 'finished')
+            return abort(401, 'event.eventFinished');
+
+        if($user->division != $event->division)
+            return abort(401, 'admin.wrongDivision');
 
         $dateStart = new Carbon();
         $dateEnd = new Carbon();
