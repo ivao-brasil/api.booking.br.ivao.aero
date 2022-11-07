@@ -23,7 +23,7 @@ class EventController extends Controller
         //$this->authorize('create', Event::class);
         
         if(!Auth::user()->admin)
-            return abort(401, 'admin.notAdmin');
+            return abort(403, 'admin.notAdmin');
 
 
         $this->validate($request, [
@@ -159,7 +159,7 @@ class EventController extends Controller
         //$this->authorize('update', $event);
 
         if(!Auth::user()->admin)
-            return abort(401, 'admin.notAdmin');
+            return abort(403, 'admin.notAdmin');
 
         $dateStart = new Carbon();
         $dateEnd = new Carbon();
