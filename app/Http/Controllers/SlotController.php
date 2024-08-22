@@ -234,7 +234,7 @@ class SlotController extends Controller
         }
 
         return $this->paginationService->transform(
-            $slots->paginate($perPage > 25 ? 25 : $perPage)
+            $slots->paginate(min($perPage, 25))
         );
     }
 

@@ -6,8 +6,11 @@ use App\Models\Event;
 use App\Models\EventAirport;
 use App\Services\PaginationService;
 use Carbon\Carbon;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpFoundation\Response;
 
 class EventController extends Controller
 {
@@ -21,25 +24,58 @@ class EventController extends Controller
     public function create(Request $request)
     {
         //$this->authorize('create', Event::class);
-        
-        if(!Auth::user()->admin)
+
+        if (!Auth::user()->admin)
             return abort(403, 'admin.notAdmin');
 
 
-        $this->validate($request, [
-            'atcBooking' => 'required|url',
-            'atcBriefing' => 'url',
-            'banner' => 'required|url',
-            'dateStart' => 'required|numeric',
-            'dateEnd' => 'required|numeric|gt:dateStart',
-            'description' => 'required|string',
-            'eventName' => 'required|string|max:255',
-            'pilotBriefing' => 'url',
-            'privateSlots' => 'boolean',
-            'publicAccess' => 'boolean',
-            'airports' => 'required|string',
-            'type' => 'required|string',
-        ]);
+        try {
+            $this->validate($request, [
+                'atcBooking' => 'required|url',
+                'atcBriefing' => 'url',
+                'banner' => 'required|url',
+                'dateStart' => 'required|numeric',
+                'dateEnd' => 'required|numeric|gt:dateStart',
+                'description' => 'required|string',
+                'eventName' => 'required|string|max:255',
+                'pilotBriefing' => 'url',
+                'privateSlots' => 'boolean',
+                'publicAccess' => 'boolean',
+                'airports' => 'required|string',
+                'type' => 'required|string|in:rfe,rfo,msa',
+            ], [
+                'atcBooking.required' => 'The ATC booking link is required.',
+                'atcBooking.url' => 'The ATC booking link must be a valid URL.',
+                'atcBriefing.url' => 'The ATC briefing link must be a valid URL.',
+                'banner.required' => 'The banner image link is required.',
+                'banner.url' => 'The banner image link must be a valid URL.',
+                'dateStart.required' => 'The start date is required.',
+                'dateStart.numeric' => 'The start date must be a numeric value.',
+                'dateEnd.required' => 'The end date is required.',
+                'dateEnd.numeric' => 'The end date must be a numeric value.',
+                'dateEnd.gt' => 'The end date must be greater than the start date.',
+                'description.required' => 'The description is required.',
+                'description.string' => 'The description must be a string.',
+                'eventName.required' => 'The event name is required.',
+                'eventName.string' => 'The event name must be a string.',
+                'eventName.max' => 'The event name may not be greater than 255 characters.',
+                'pilotBriefing.url' => 'The pilot briefing link must be a valid URL.',
+                'privateSlots.boolean' => 'The private slots field must be a boolean value (true or false).',
+                'publicAccess.boolean' => 'The public access field must be a boolean value (true or false).',
+                'airports.required' => 'The airports field is required.',
+                'airports.string' => 'The airports field must be a string.',
+                'type.required' => 'The type field is required.',
+                'type.string' => 'The type field must be a string.',
+                'type.in' => 'The type field must be one of the following values: rfe, rfo, msa.',
+            ]);
+        } catch (ValidationException $e) {
+            return response([
+                'error' => [
+                    'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
+                    'messages' => $e->errors()
+                ]
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
 
         $user = Auth::user();
 
@@ -49,7 +85,7 @@ class EventController extends Controller
         $dateStart->setTimestamp($request->input('dateStart'));
         $dateEnd->setTimestamp($request->input('dateEnd'));
 
-        if($dateStart->diffInHours($dateEnd) > 10) {
+        if ($dateStart->diffInHours($dateEnd) > 10) {
             return abort(403, 'event.tooLong');
         }
 
@@ -76,13 +112,13 @@ class EventController extends Controller
 
         self::setAirports($event->id, $request->input('airports'));
 
-        return response(null, 201);
+        return response($event, 201);
     }
 
     /**
      * MINIMUM VIABLE PRODUCT
      *
-     * TODO: IMPROVE THIS THING TO AVOID UNECESSARY CALLS TO THE DATABASE
+     * TODO: IMPROVE THIS THING TO AVOID NECESSARY CALLS TO THE DATABASE
      */
     private static function setAirports($eventId, $airportList)
     {
@@ -98,23 +134,39 @@ class EventController extends Controller
         }
     }
 
+    /**
+     * @throws AuthorizationException
+     */
+    public function delete($id): void
+    {
+        $event = Event::whereId($id);
+
+        if (!$event) {
+            abort(404, 'event.notFound');
+        }
+
+        $this->authorize('delete', $event);
+
+        $event->delete();
+    }
+
     public function get(Request $request)
     {
 
         $events = Event::query()
-                    ->where('id', '>=', 1)
-                    ->orderBy('created_at', 'desc')
-                    ->with('airports.sceneries');  //Specifies that we want to bring the airports, as well as the sceneries
+            ->where('id', '>=', 1)
+            ->orderBy('created_at', 'desc')
+            ->with('airports.sceneries');  //Specifies that we want to bring the airports, as well as the sceneries
 
 
         if (!$request->input('showAll')) {
             $events = $events
-                        ->where('dateEnd', '>=', Carbon::now());
+                ->where('dateEnd', '>=', Carbon::now());
         } else {
-            if(!Auth::user()->admin) return response(['error' => 'admin.noAdmin'], 403);
+            if (!Auth::user()->admin) return response(['error' => 'admin.noAdmin'], 403);
         }
 
-        $perPage = (int)$request->query('perPage', 5,);
+        $perPage = (int)$request->query('perPage', 5);
 
         if ($request->query('status')) {
             $events->where('status', $request->query('status'));
@@ -127,7 +179,7 @@ class EventController extends Controller
     {
         $event = Event::where('id', $id)->with('airports.sceneries')->first();  //Returns a single Event from the database
 
-        if(!$event || $event->has_ended && !Auth::user()->admin) return response(['error' => 'event.notFound'], 404);
+        if (!$event || $event->has_ended && !Auth::user()->admin) return response(['error' => 'event.notFound'], 404);
 
         return $event;
     }
@@ -158,7 +210,7 @@ class EventController extends Controller
 
         //$this->authorize('update', $event);
 
-        if(!Auth::user()->admin)
+        if (!Auth::user()->admin)
             return abort(403, 'admin.notAdmin');
 
         $dateStart = new Carbon();
@@ -167,7 +219,7 @@ class EventController extends Controller
         $dateStart->setTimestamp($request->input('dateStart'));
         $dateEnd->setTimestamp($request->input('dateEnd'));
 
-        if($dateStart->diffInHours($dateEnd) > 10) {
+        if ($dateStart->diffInHours($dateEnd) > 10) {
             return abort(403, 'event.tooLong');
         }
 
@@ -190,18 +242,5 @@ class EventController extends Controller
         self::setAirports($event->id, $request->input('airports'));
 
         $event->save();
-    }
-
-    public function delete($id)
-    {
-        $event = Event::find($id);
-
-        if (!$event) {
-            abort(404, 'event.notFound');
-        }
-
-        $this->authorize('delete', $event);
-
-        Event::where('id', $id)->delete();
     }
 }
