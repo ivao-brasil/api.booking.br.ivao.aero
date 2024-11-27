@@ -22,7 +22,7 @@ services:
       - LOG_SLACK_WEBHOOK_URL=
       - DB_CONNECTION=mysql
       - DB_HOST=db
-      - DB_PORT=3306
+      - DB_PORT=3307
       - DB_DATABASE=ivao
       - DB_USERNAME=root
       - DB_PASSWORD=secret
@@ -34,21 +34,9 @@ services:
     container_name: booking-db
     image: mariadb
     ports:
-      - 3306:3306
+      - 3307:3306
     environment:
       - MYSQL_DATABASE=ivao
       - MYSQL_ROOT_PASSWORD=secret
     volumes:
       - ./.docker/mysql:/var/lib/mysql
-  phpmyadmin:
-    container_name: booking-phpmyadmin
-    image: phpmyadmin
-    ports:
-      - 8081:80
-    environment:
-      - PMA_HOST=db
-      - PMA_PORT=3306
-      - PMA_USER=root
-      - PMA_PASSWORD=secret
-    depends_on:
-      - db

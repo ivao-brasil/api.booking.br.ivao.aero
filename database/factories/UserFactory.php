@@ -30,7 +30,7 @@ class UserFactory extends Factory
             'division' => 'BR',
             'country' => 'BR',
             'suspended' => $this->faker->numberBetween(0, 1),
-            'admin' => $this->faker->numberBetween(0, 1)
+            'admin' => $this->faker->numberBetween(0, 2)
         ];
     }
 }
