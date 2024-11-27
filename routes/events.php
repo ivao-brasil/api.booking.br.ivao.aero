@@ -16,11 +16,6 @@
 use App\Http\Controllers\EventDataExporter;
 use Illuminate\Support\Facades\Auth;
 
-$router->group(['middleware' => 'auth', 'prefix' => 'event'], function() use($router) {
-    $router->post('/', 'EventController@create');
+$router->group(['middleware' => 'auth', 'prefix' => 'events'], function() use($router) {
     $router->get('/', 'EventController@get');
-    $router->get('/{id}', 'EventController@getSingle');
-    $router->put('/{id}', 'EventController@update');
-    $router->delete('/{id}', 'EventController@delete');
-    $router->get('/{id}/export', 'EventDataExporterController@__invoke');
 });

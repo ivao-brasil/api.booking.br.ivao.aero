@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\DivisionValidation;
 use App\Models\Event;
 use App\Models\EventAirport;
 use App\Services\PaginationService;
@@ -31,6 +32,7 @@ class EventController extends Controller
 
         try {
             $this->validate($request, [
+                'divisionId' => ['required', new DivisionValidation],
                 'atcBooking' => 'required|url',
                 'atcBriefing' => 'url',
                 'banner' => 'required|url',
@@ -44,6 +46,7 @@ class EventController extends Controller
                 'airports' => 'required|string',
                 'type' => 'required|string|in:rfe,rfo,msa',
             ], [
+                'divisionId.required' => 'The division ID is required.',
                 'atcBooking.required' => 'The ATC booking link is required.',
                 'atcBooking.url' => 'The ATC booking link must be a valid URL.',
                 'atcBriefing.url' => 'The ATC briefing link must be a valid URL.',
@@ -68,6 +71,8 @@ class EventController extends Controller
                 'type.string' => 'The type field must be a string.',
                 'type.in' => 'The type field must be one of the following values: rfe, rfo, msa.',
             ]);
+
+
         } catch (ValidationException $e) {
             return response([
                 'error' => [
@@ -137,9 +142,9 @@ class EventController extends Controller
     /**
      * @throws AuthorizationException
      */
-    public function delete($id): void
+    public function delete($divisionId, $eventId): void
     {
-        $event = Event::whereId($id);
+        $event = Event::whereId($eventId)->where('division', $divisionId)->first();
 
         if (!$event) {
             abort(404, 'event.notFound');
@@ -150,9 +155,27 @@ class EventController extends Controller
         $event->delete();
     }
 
+    public function getFromDivision($divisionId)
+    {
+        $events = Event::query()
+            ->where('division', $divisionId)
+            ->orderBy('created_at', 'desc')
+            ->with('airports.sceneries');
+
+        return $this->paginationService->transform($events->paginate(5));
+    }
+
+    public function getSingleFromDivision($divisionId, $eventId)
+    {
+        $event = Event::whereId(eventId)->where('division', $divisionId)->with('airports.sceneries')->first();
+
+        if (!$event || $event->has_ended) return response(['error' => 'event.notFound'], 404);
+
+        return $event;
+    }
+
     public function get(Request $request)
     {
-
         $events = Event::query()
             ->where('id', '>=', 1)
             ->orderBy('created_at', 'desc')
