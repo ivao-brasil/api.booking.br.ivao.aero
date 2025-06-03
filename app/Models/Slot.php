@@ -56,12 +56,16 @@ class Slot extends Model
 {
     protected $fillable = [
         'flightNumber',
+        'fixedFlightNumber',
         'origin',
+        'fixedOrigin',
         'destination',
+        'fixedDestination',
         'type',
         'slotTime',
         'gate',
         'aircraft',
+        'fixedAircraft',
         'route',
         'bookingTime',
         'bookingStatus',
@@ -75,11 +79,15 @@ class Slot extends Model
 
     public static $allowedQueryParams = [
         'flightNumber',
+        'fixedFlightNumber',
         'aircraft',
+        'fixedAircraft',
         'type',
         'private',
         'origin',
-        'destination'
+        'fixedOrigin',
+        'destination',
+        'fixedDestination'
     ];
 
     protected $appends = [
