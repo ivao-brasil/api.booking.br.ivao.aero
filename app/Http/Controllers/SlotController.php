@@ -138,7 +138,6 @@ class SlotController extends Controller
 
         if ($request->input('private')) {
             $this->validate($request, [
-                'type' => 'required|string',
                 'flightNumber' => 'string|max:7',
                 'origin' => 'string|max:4',
                 'destination' => 'string|max:4',
@@ -193,6 +192,20 @@ class SlotController extends Controller
                 $slots = $slots
                           ->where('flightNumber', "LIKE", $request->input("airline") . "%");
 
+                continue;
+            }
+
+            if($param == "type") {
+                if($value == "takeoff") {
+                    $slots = $slots->where('isFixedOrigin', 1)
+                                   ->where('isFixedDestination', 0);
+                } else if($value == "landing") {
+                    $slots = $slots->where('isFixedOrigin', 0)
+                                   ->where('isFixedDestination', 1);
+                } else if($value == "takeoff_landing") {
+                    $slots = $slots->where('isFixedOrigin', 1)
+                                   ->where('isFixedDestination', 1);
+                }
                 continue;
             }
 
