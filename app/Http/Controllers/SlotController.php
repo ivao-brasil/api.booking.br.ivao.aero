@@ -75,7 +75,7 @@ class SlotController extends Controller
                 $request->merge(['flightNumber' => strtoupper($request->input('flightNumber'))]);
             }
             else {
-                $request->input('flightNumber', $slot->flightNumber);
+                $request->merge(['flightNumber' => $slot->flightNumber]);
             }
 
             if(!$slot->isFixedOrigin) {
@@ -86,7 +86,7 @@ class SlotController extends Controller
                 AirportController::getAirportByICAO($request->input('origin'));
             }
             else {
-                $request->input('origin', $slot->origin);
+                $request->merge(['origin' => $slot->origin]);
             }
 
             if(!$slot->isFixedDestination) {
@@ -97,7 +97,7 @@ class SlotController extends Controller
                 AirportController::getAirportByICAO($request->input('destination'));
             }
             else {
-                $request->input('destination', $slot->destination);
+                $request->merge(['destination' => $slot->destination]);
             }
 
             if(!$slot->isFixedAircraft) {
@@ -107,7 +107,7 @@ class SlotController extends Controller
                 $request->merge(['aircraft' => strtoupper($request->input('aircraft'))]);
             }
             else {
-                $request->input('aircraft', $slot->aircraft);
+                $request->merge(['aircraft' => $slot->aircraft]);
             }
 
             if($slot->event->slots->where('flightNumber', $request->input('flightNumber'))->count() > 0){
