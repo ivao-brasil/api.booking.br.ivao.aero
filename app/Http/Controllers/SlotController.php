@@ -136,8 +136,6 @@ class SlotController extends Controller
             abort(404, 'book.notFound');
         }
 
-        $this->validate($request, ['private' => 'required|boolean']);
-
         if ($request->input('private')) {
             $this->validate($request, [
                 'type' => 'required|string',
@@ -186,16 +184,6 @@ class SlotController extends Controller
                 $slots = $slots
                     ->doesntHave("owner")
                     ->where("bookingStatus", "free");
-
-                continue;
-            }
-
-            //This validates only private slots
-            if ($param == "private") {
-                $value = filter_var($value, FILTER_VALIDATE_BOOLEAN);
-
-                $slots = $slots
-                          ->where('private', $value);
 
                 continue;
             }
@@ -271,23 +259,24 @@ class SlotController extends Controller
 
     public function getEventSlotCountByType(string $eventId) {
         $takeoffCount = Slot::where('eventId', $eventId)
-            ->where('type', 'takeoff')
-            ->where('private', 0)
+            ->where('isFixedOrigin', 1)
+            ->where('isFixedDestination', 0)
             ->count();
 
         $landingCount = Slot::where('eventId', $eventId)
-            ->where('type', 'landing')
-            ->where('private', 0)
+            ->where('isFixedOrigin', 0)
+            ->where('isFixedDestination', 1)
             ->count();
 
-        $privateCount = Slot::where('eventId', $eventId)
-            ->where('private', 1)
+        $takeoffAndLanding = Slot::where('eventId', $eventId)
+            ->where('isFixedOrigin', 1)
+            ->where('isFixedDestination', 1)
             ->count();
 
         return response()->json([
             'departure' => $takeoffCount,
             'landing'   => $landingCount,
-            'private'   => $privateCount
+            'departureLanding'   => $takeoffAndLanding
         ]);
     }
 
