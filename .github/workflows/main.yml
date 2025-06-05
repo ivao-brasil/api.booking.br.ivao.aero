@@ -2,7 +2,7 @@ on:
   push:
     branches:
       - main
-      
+
 name: 🚀 Deploy to the Production enviroment
 jobs:
   web-deploy:
@@ -11,11 +11,12 @@ jobs:
     steps:
     - name: 🚚 Get latest code
       uses: actions/checkout@v2
-    
+
     - name: 📂 Sync files
-      uses: SamKirkland/FTP-Deploy-Action@4.1.0
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
-        server: ${{ secrets.production_ftp_host }}
-        username: ${{ secrets.production_ftp_username }}
-        password: ${{ secrets.production_ftp_password }}
-        server-dir: /
+        server: ${{ secrets.FTP_HOST }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        local-dir: /
+        server-dir: ${{ secrets.SERVER_DIR }}
