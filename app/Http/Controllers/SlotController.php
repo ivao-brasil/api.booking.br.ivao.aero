@@ -72,26 +72,42 @@ class SlotController extends Controller
                 $this->validate($request, [
                    'flightNumber' => 'required|string|max:7',
                 ]);
+                $request->merge(['flightNumber' => strtoupper($request->input('flightNumber'))]);
+            }
+            else {
+                $request->input('flightNumber', $slot->flightNumber);
             }
 
             if(!$slot->isFixedOrigin) {
                 $this->validate($request, [
                     'origin' => 'required|string|max:4',
                 ]);
+                $request->merge(['origin' => strtoupper($request->input('origin'))]);
                 AirportController::getAirportByICAO($request->input('origin'));
+            }
+            else {
+                $request->input('origin', $slot->origin);
             }
 
             if(!$slot->isFixedDestination) {
                 $this->validate($request, [
                     'destination' => 'required|string|max:4',
                 ]);
+                $request->merge(['destination' => strtoupper($request->input('destination'))]);
                 AirportController::getAirportByICAO($request->input('destination'));
+            }
+            else {
+                $request->input('destination', $slot->destination);
             }
 
             if(!$slot->isFixedAircraft) {
                 $this->validate($request, [
                     'aircraft' => 'required|string|max:4',
                 ]);
+                $request->merge(['aircraft' => strtoupper($request->input('aircraft'))]);
+            }
+            else {
+                $request->input('aircraft', $slot->aircraft);
             }
 
             if($slot->event->slots->where('flightNumber', $request->input('flightNumber'))->count() > 0){
