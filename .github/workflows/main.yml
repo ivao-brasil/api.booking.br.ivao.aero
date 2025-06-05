@@ -23,3 +23,5 @@ jobs:
         exclude: |
           storage/app/logos/**
           tests/**
+          .github/**
+          .git/**

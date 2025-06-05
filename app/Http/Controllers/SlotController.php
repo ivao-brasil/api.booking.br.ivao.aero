@@ -68,12 +68,29 @@ class SlotController extends Controller
         $this->authorize('bookUpdate', [$slot, $action]);
 
         if ($action === 'book') {
-            $this->validate($request, [
-                'flightNumber' => 'required|string|max:7',
-                'origin' => 'required|string|max:4',
-                'destination' => 'required|string|max:4',
-                'aircraft' => 'required|string|max:4',
-            ]);
+            if(!$slot.isFixedFlightNumber) {
+                $this->validate($request, [
+                   'flightNumber' => 'required|string|max:7',
+                ]);
+            }
+
+            if(!$slot->isFixedOrigin) {
+                $this->validate($request, [
+                    'origin' => 'required|string|max:4',
+                ]);
+            }
+
+            if(!$slot->isFixedDestination) {
+                $this->validate($request, [
+                    'destination' => 'required|string|max:4',
+                ]);
+            }
+
+            if(!$slot->isFixedAircraft) {
+                $this->validate($request, [
+                    'aircraft' => 'required|string|max:4',
+                ]);
+            }
 
             AirportController::getAirportByICAO($request->input('origin'));
             AirportController::getAirportByICAO($request->input('destination'));
