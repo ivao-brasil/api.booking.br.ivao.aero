@@ -78,12 +78,14 @@ class SlotController extends Controller
                 $this->validate($request, [
                     'origin' => 'required|string|max:4',
                 ]);
+                AirportController::getAirportByICAO($request->input('origin'));
             }
 
             if(!$slot->isFixedDestination) {
                 $this->validate($request, [
                     'destination' => 'required|string|max:4',
                 ]);
+                AirportController::getAirportByICAO($request->input('destination'));
             }
 
             if(!$slot->isFixedAircraft) {
@@ -91,9 +93,6 @@ class SlotController extends Controller
                     'aircraft' => 'required|string|max:4',
                 ]);
             }
-
-            AirportController::getAirportByICAO($request->input('origin'));
-            AirportController::getAirportByICAO($request->input('destination'));
 
             if($slot->event->slots->where('flightNumber', $request->input('flightNumber'))->count() > 0){
                 abort(422, "book.duplicateNumber");
