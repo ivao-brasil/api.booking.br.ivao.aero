@@ -85,7 +85,6 @@ class Slot extends Model
         'aircraft',
         'isFixedAircraft',
         'type',
-        'private',
         'origin',
         'isFixedOrigin',
         'destination',
