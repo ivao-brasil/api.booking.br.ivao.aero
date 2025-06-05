@@ -68,7 +68,7 @@ class SlotController extends Controller
         $this->authorize('bookUpdate', [$slot, $action]);
 
         if ($action === 'book') {
-            if(!$slot.isFixedFlightNumber) {
+            if(!$slot->isFixedFlightNumber) {
                 $this->validate($request, [
                    'flightNumber' => 'required|string|max:7',
                 ]);
