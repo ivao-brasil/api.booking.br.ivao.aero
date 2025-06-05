@@ -33,29 +33,15 @@ class SlotController extends Controller
             abort(404, 'event.notFound');
         }
 
-        $this->validate($request, ['private' => 'required|boolean']);
-
-        if ($request->input('private')) {
-            $this->validate($request, [
-                'type' => 'required|string',
-                'flightNumber' => 'string|max:7',
-                'origin' => 'string|max:4',
-                'destination' => 'string|max:4',
-                'slotTime' => 'required|string|max:4',
-                'gate' => 'required|string|max:10',
-                'aircraft' => 'string|max:4',
-            ]);
-        } else {
-            $this->validate($request, [
-                'type' => 'required|string',
-                'flightNumber' => 'required|string|max:7',
-                'origin' => 'required|string|max:4',
-                'destination' => 'required|string|max:4',
-                'slotTime' => 'required|required|string|max:4',
-                'gate' => 'required|string|max:10',
-                'aircraft' => 'required|string|max:4',
-            ]);
-        }
+        $this->validate($request, [
+            'type' => 'required|string',
+            'flightNumber' => 'string|max:7',
+            'origin' => 'string|max:4',
+            'destination' => 'string|max:4',
+            'slotTime' => 'required|string|max:4',
+            'gate' => 'required|string|max:10',
+            'aircraft' => 'string|max:4',
+        ]);
 
         $slot = new Slot();
         $slot->fill($request->all());
@@ -82,27 +68,21 @@ class SlotController extends Controller
         $this->authorize('bookUpdate', [$slot, $action]);
 
         if ($action === 'book') {
-            if ($slot->private) {
-                $this->validate($request, [
-                    'flightNumber' => 'required|string|max:7',
-                    'origin' => 'required|string|max:4',
-                    'destination' => 'required|string|max:4',
-                    'aircraft' => 'required|string|max:4',
-                ]);
+            $this->validate($request, [
+                'flightNumber' => 'required|string|max:7',
+                'origin' => 'required|string|max:4',
+                'destination' => 'required|string|max:4',
+                'aircraft' => 'required|string|max:4',
+            ]);
 
-                //If the airport is not found, this function will eventually abort()
-                AirportController::getAirportByICAO($request->input('origin'));
-                AirportController::getAirportByICAO($request->input('destination'));
+            AirportController::getAirportByICAO($request->input('origin'));
+            AirportController::getAirportByICAO($request->input('destination'));
 
-
-                //TODO: This is another instance of the ->count() need (just like the SlotPolicy).
-                if($slot->event->slots->where('flightNumber', $request->input('flightNumber'))->count() > 0){
-                    abort(403, "book.duplicateNumber");
-                }
-
-                $slot->fill($request->all());
-
+            if($slot->event->slots->where('flightNumber', $request->input('flightNumber'))->count() > 0){
+                abort(422, "book.duplicateNumber");
             }
+
+            $slot->fill($request->all());
 
             /** @var \App\Models\Event */
             $slotEvent = $slot->event;
@@ -112,7 +92,7 @@ class SlotController extends Controller
             //Cycle through the user slots and checks for overlapping slots.
             foreach($user->slotsBooked->where('eventId', $slot->event->id) as $bookedSlot) {
                 if(SlotController::checkOverlappingSlots($slot, $bookedSlot)) {
-                    return abort(403, 'book.alreadyBusy');
+                    return abort(422, 'book.alreadyBusy');
                 }
             }
 
@@ -120,15 +100,19 @@ class SlotController extends Controller
 
             $user->slotsBooked()->save($slot);
         } else if ($action === "cancel") {
-
-            if ($slot->private) {
-                if($slot->type === 'takeoff') {
-                    $slot->destination = null;
-                } else if ($slot->type === 'landing') {
-                    $slot->origin = null;
-                }
-
+            if(!$slot->isFixedFlightNumber) {
                 $slot->flightNumber = null;
+            }
+
+            if(!$slot->isFixedOrigin) {
+                $slot->origin = null;
+            }
+
+            if(!$slot->isFixedDestination) {
+                $slot->destination = null;
+            }
+
+            if(!$slot->isFixedAircraft) {
                 $slot->aircraft = null;
             }
 

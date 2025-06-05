@@ -13,13 +13,16 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @property int $id
  * @property string|null $flightNumber
+ * @property bool $isFixedFlightNumber
  * @property string|null $origin
+ * @property bool $isFixedOrigin
  * @property string|null $destination
+ * @property bool $isFixedDestination
  * @property string $type
- * @property int $private
  * @property string $slotTime
  * @property string|null $gate
  * @property string|null $aircraft
+ * @property bool $isFixedAircraft
  * @property int|null $pilotId
  * @property int $eventId
  * @property \Illuminate\Support\Carbon|null $bookingTime
@@ -56,20 +59,19 @@ class Slot extends Model
 {
     protected $fillable = [
         'flightNumber',
-        'fixedFlightNumber',
+        'isFixedFlightNumber',
         'origin',
-        'fixedOrigin',
+        'isFixedOrigin',
         'destination',
-        'fixedDestination',
+        'isFixedDestination',
         'type',
         'slotTime',
         'gate',
         'aircraft',
-        'fixedAircraft',
+        'isFixedAircraft',
         'route',
         'bookingTime',
-        'bookingStatus',
-        'private'
+        'bookingStatus'
     ];
 
     protected $hidden = [
@@ -79,15 +81,15 @@ class Slot extends Model
 
     public static $allowedQueryParams = [
         'flightNumber',
-        'fixedFlightNumber',
+        'isFixedFlightNumber',
         'aircraft',
-        'fixedAircraft',
+        'isFixedAircraft',
         'type',
         'private',
         'origin',
-        'fixedOrigin',
+        'isFixedOrigin',
         'destination',
-        'fixedDestination'
+        'isFixedDestination'
     ];
 
     protected $appends = [

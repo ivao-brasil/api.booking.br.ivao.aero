@@ -13,12 +13,12 @@ class AddSlotFixedFields extends Migration
      */
     public function up()
     {
-        // Add the fields fixedFlightNumber, fixedOrigin, fixedDestination, fixedAicraft of the type tinyint(0 or 1), required, default 0 to the slots table slots
+        // Add the fields isFixedFlightNumber, isFixedOrigin, isFixedDestination, isFixedAicraft of the type tinyint(0 or 1), required, default 0 to the slots table slots
         Schema::table('slots', function (Blueprint $table) {
-            $table->boolean('fixedFlightNumber')->default(false)->after('flightNumber');
-            $table->boolean('fixedOrigin')->default(false)->after('origin');
-            $table->boolean('fixedDestination')->default(false)->after('destination');
-            $table->boolean('fixedAircraft')->default(false)->after('aircraft');
+            $table->boolean('isFixedFlightNumber')->default(false)->after('flightNumber');
+            $table->boolean('isFixedOrigin')->default(false)->after('origin');
+            $table->boolean('isFixedDestination')->default(false)->after('destination');
+            $table->boolean('isFixedAircraft')->default(false)->after('aircraft');
         });
     }
 
@@ -29,12 +29,12 @@ class AddSlotFixedFields extends Migration
      */
     public function down()
     {
-        // Drop the fields fixedFlightNumber, fixedOrigin, fixedDestination, fixedAicraft from the slots table slots
+        // Drop the fields isFixedFlightNumber, isFixedOrigin, isFixedDestination, isFixedAicraft from the slots table slots
         Schema::table('slots', function (Blueprint $table) {
-            $table->dropColumn('fixedFlightNumber');
-            $table->dropColumn('fixedOrigin');
-            $table->dropColumn('fixedDestination');
-            $table->dropColumn('fixedAircraft');
+            $table->dropColumn('isFixedFlightNumber');
+            $table->dropColumn('isFixedOrigin');
+            $table->dropColumn('isFixedDestination');
+            $table->dropColumn('isFixedAircraft');
         });
     }
 }
