@@ -14,7 +14,6 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon $dateStart
  * @property \Illuminate\Support\Carbon $dateEnd
  * @property string $eventName
- * @property int $privateSlots
  * @property string $status
  * @property int $createdBy
  * @property string $description
@@ -52,7 +51,6 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Event whereEventName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Event whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Event wherePilotBriefing($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Event wherePrivateSlots($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Event wherePublic($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Event whereStatus($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Event whereType($value)
@@ -68,7 +66,6 @@ class Event extends Model
         'dateStart',
         'dateEnd',
         'eventName',
-        'privateSlots',
         'status',
         'createdBy',
         'pilotBriefing',

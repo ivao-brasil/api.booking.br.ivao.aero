@@ -49,7 +49,6 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Slot whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Slot whereOrigin($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Slot wherePilotId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Slot wherePrivate($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Slot whereSlotTime($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Slot whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Slot whereUpdatedAt($value)

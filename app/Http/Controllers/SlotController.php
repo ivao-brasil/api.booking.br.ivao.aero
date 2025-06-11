@@ -168,30 +168,26 @@ class SlotController extends Controller
             abort(404, 'book.notFound');
         }
 
-        if ($request->input('private')) {
-            $this->validate($request, [
-                'flightNumber' => 'string|max:7',
-                'origin' => 'string|max:4',
-                'destination' => 'string|max:4',
-                'slotTime' => 'required|string|max:4',
-                'gate' => 'required|string|max:10',
-                'aircraft' => 'string|max:4',
-            ]);
+        $this->validate($request, ['slotTime' => 'regex:/^\d{4}$/']);
 
-            $slot->flightNumber = null;
-            $slot->origin = null;
-            $slot->destination = null;
-            $slot->aircraft = null;
-        } else {
-            $this->validate($request, [
-                'type' => 'required|string',
-                'flightNumber' => 'required|string|max:7',
-                'origin' => 'required|string|max:4',
-                'destination' => 'required|string|max:4',
-                'slotTime' => 'required|required|string|max:4',
-                'gate' => 'required|string|max:10',
-                'aircraft' => 'required|string|max:4',
-            ]);
+        if($request->input("origin")) {
+            $this->validate($request, ['origin' => 'regex:/^[a-zA-Z]{4}$/']);
+            AirportController::getAirportByICAO($request->input('origin'));
+        }
+
+        if($request->input("destination")) {
+            $this->validate($request, ['destination' => 'regex:/^[a-zA-Z]{4}$/']);
+            AirportController::getAirportByICAO($request->input('destination'));
+        }
+
+        if($request->input("aircraft")) {
+            $this->validate($request, ['aircraft' => 'regex:/^\w{4}$/']);
+            AirportController::getAirportByICAO($request->input('aircraft'));
+        }
+
+        if($request->input("flightNumber")) {
+            $this->validate($request, ['flightNumber' => 'regex:/^\w{1-8}$/']);
+            AirportController::getAirportByICAO($request->input('flightNumber'));
         }
 
         $slot->fill($request->all());
