@@ -18,6 +18,15 @@ class SlotController extends Controller
 {
     private $paginationService;
 
+    private static $slotDataValidationRules = [
+        'flightNumber' => 'nullable|string|max:10|regex:/^[A-Z0-9]+$/',
+        'origin' => 'nullable|string|regex:/^[A-Z]{4}$/|isAirportExistent',
+        'destination' => 'nullable|string|regex:/^[A-Z]{4}$/|isAirportExistent',
+        'slotTime' => 'required|string|numeric|size:4',
+        'gate' => 'nullable|string|alpha_num|max:10',
+        'aircraft' => 'nullable|string|regex:/^[A-Z0-9]{4}$/',
+    ];
+
     public function __construct(PaginationService $paginationService)
     {
         $this->paginationService = $paginationService;
@@ -33,15 +42,7 @@ class SlotController extends Controller
             abort(404, 'event.notFound');
         }
 
-        $this->validate($request, [
-            'type' => 'required|string',
-            'flightNumber' => 'string|max:7',
-            'origin' => 'string|max:4',
-            'destination' => 'string|max:4',
-            'slotTime' => 'required|string|max:4',
-            'gate' => 'required|string|max:10',
-            'aircraft' => 'string|max:4',
-        ]);
+        $this->validateFullSlot($request);
 
         $slot = new Slot();
         $slot->fill($request->all());
@@ -62,53 +63,45 @@ class SlotController extends Controller
         $user = Auth::user();
 
         if (!$slot) {
-            return abort(404, 'book.notFound');
+            abort(404, 'book.notFound');
         }
 
         $this->authorize('bookUpdate', [$slot, $action]);
 
         if ($action === 'book') {
+            $validationRules = [];
             if(!$slot->isFixedFlightNumber) {
-                $this->validate($request, [
-                   'flightNumber' => 'required|string|max:7',
-                ]);
-                $request->merge(['flightNumber' => strtoupper($request->input('flightNumber'))]);
+                $validationRules[] = 'flightNumber';
             }
             else {
                 $request->merge(['flightNumber' => $slot->flightNumber]);
             }
 
             if(!$slot->isFixedOrigin) {
-                $this->validate($request, [
-                    'origin' => 'required|string|max:4',
-                ]);
-                $request->merge(['origin' => strtoupper($request->input('origin'))]);
-                AirportController::getAirportByICAO($request->input('origin'));
+                $validationRules[] = 'origin';
             }
             else {
                 $request->merge(['origin' => $slot->origin]);
             }
 
             if(!$slot->isFixedDestination) {
-                $this->validate($request, [
-                    'destination' => 'required|string|max:4',
-                ]);
-                $request->merge(['destination' => strtoupper($request->input('destination'))]);
-                AirportController::getAirportByICAO($request->input('destination'));
+                $validationRules[] = 'destination';
             }
             else {
                 $request->merge(['destination' => $slot->destination]);
             }
 
             if(!$slot->isFixedAircraft) {
-                $this->validate($request, [
-                    'aircraft' => 'required|string|max:4',
-                ]);
-                $request->merge(['aircraft' => strtoupper($request->input('aircraft'))]);
+                $validationRules[] = 'aircraft';
             }
             else {
                 $request->merge(['aircraft' => $slot->aircraft]);
             }
+
+            $this->validate($request, array_intersect_key(
+                self::$slotDataValidationRules,
+                $validationRules
+            ));
 
             if($slot->event->slots->where('flightNumber', $request->input('flightNumber'))->count() > 0){
                 abort(422, "book.duplicateNumber");
@@ -124,7 +117,7 @@ class SlotController extends Controller
             //Cycle through the user slots and checks for overlapping slots.
             foreach($user->slotsBooked->where('eventId', $slot->event->id) as $bookedSlot) {
                 if(SlotController::checkOverlappingSlots($slot, $bookedSlot)) {
-                    return abort(422, 'book.alreadyBusy');
+                    abort(422, 'book.alreadyBusy');
                 }
             }
 
@@ -161,37 +154,14 @@ class SlotController extends Controller
     public function update(Request $request, $slotId)
     {
         $this->authorize('create', Slot::class);
-
         $slot = Slot::find($slotId);
 
         if (!$slot) {
             abort(404, 'book.notFound');
         }
 
-        $this->validate($request, ['slotTime' => 'regex:/^\d{4}$/']);
-
-        if($request->input("origin")) {
-            $this->validate($request, ['origin' => 'regex:/^[a-zA-Z]{4}$/']);
-            AirportController::getAirportByICAO($request->input('origin'));
-        }
-
-        if($request->input("destination")) {
-            $this->validate($request, ['destination' => 'regex:/^[a-zA-Z]{4}$/']);
-            AirportController::getAirportByICAO($request->input('destination'));
-        }
-
-        if($request->input("aircraft")) {
-            $this->validate($request, ['aircraft' => 'regex:/^\w{4}$/']);
-            AirportController::getAirportByICAO($request->input('aircraft'));
-        }
-
-        if($request->input("flightNumber")) {
-            $this->validate($request, ['flightNumber' => 'regex:/^\w{1-8}$/']);
-            AirportController::getAirportByICAO($request->input('flightNumber'));
-        }
-
+        $this->validateFullSlot($request);
         $slot->fill($request->all());
-
         $slot->save();
     }
 
@@ -419,6 +389,48 @@ class SlotController extends Controller
     public static function getFlightTime($slot){
         $distance = AirportController::getCircleDistanceBetweenAirports($slot->origin, $slot->destination);
         return AircraftController::getFlightTimeFromICAO($slot->aircraft, $distance);
+    }
+
+    public function isAirportExistent($attribute, $value, $parameters, $validator) {
+        return AirportController::getAirportByICAO($value); // Custom condition
+    }
+
+    public function validateFullSlot(Request $request): void
+    {
+        $validationRules = ['slotTime', 'gate'];
+
+        if ($request->input('origin')) {
+            $validationRules[] = 'origin';
+        } else {
+            $request->merge(['isFixedOrigin' => 1]);
+        }
+
+        if ($request->input('destination')) {
+            $validationRules[] = 'destination';
+        } else {
+            $request->merge(['isFixedDestination' => 1]);
+        }
+
+        if ($request->input('aircraft')) {
+            $validationRules[] = 'aircraft';
+        } else {
+            $request->merge(['isFixedAircraft' => 1]);
+        }
+
+        if ($request->input('flightNumber')) {
+            $validationRules[] = 'flightNumber';
+        } else {
+            $request->merge(['isFixedFlightNumber' => 1]);
+        }
+
+        if(!$request->input('isFixedOrigin') && !$request->input('isFixedDestination')) {
+            abort(422, 'slot.invalidSlot');
+        }
+
+        $this->validate($request, array_intersect_key(
+            self::$slotDataValidationRules,
+            $validationRules
+        ));
     }
 
 }
