@@ -18,8 +18,14 @@ use Illuminate\Database\Eloquent\Model;
  * @property bool $isFixedOrigin
  * @property string|null $destination
  * @property bool $isFixedDestination
- * @property string $type
- * @property string $slotTime
+ * @property \Illuminate\Support\Carbon $etibOrigin
+ * @property bool isFixedEtibOrigin
+ * @property \Illuminate\Support\Carbon $etobOrigin
+ * @property bool isFixedEtobOrigin
+ * @property \Illuminate\Support\Carbon $etibDestination
+ * @property bool isFixedEtibDestination
+ * @property \Illuminate\Support\Carbon $etobDestination
+ * @property bool isFixedEtobDestination
  * @property string|null $gate
  * @property string|null $aircraft
  * @property bool $isFixedAircraft
@@ -49,8 +55,6 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Slot whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Slot whereOrigin($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Slot wherePilotId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Slot whereSlotTime($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Slot whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Slot whereUpdatedAt($value)
  * @mixin \Eloquent
  */
@@ -63,8 +67,14 @@ class Slot extends Model
         'isFixedOrigin',
         'destination',
         'isFixedDestination',
-        'type',
-        'slotTime',
+        'etibOrigin',
+        'isFixedEtibOrigin',
+        'etobOrigin',
+        'isFixedEtobOrigin',
+        'etibDestination',
+        'isFixedEtibDestination',
+        'etobDestination',
+        'isFixedEtobDestination',
         'gate',
         'aircraft',
         'isFixedAircraft',
@@ -83,7 +93,6 @@ class Slot extends Model
         'isFixedFlightNumber',
         'aircraft',
         'isFixedAircraft',
-        'type',
         'origin',
         'isFixedOrigin',
         'destination',
