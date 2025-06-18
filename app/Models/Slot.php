@@ -132,33 +132,4 @@ class Slot extends Model
     {
         return SlotFactory::new();
     }
-
-    public function getFlightTimeAttribute()
-    {
-        if(!$this->aircraft) return 1;
-        return AircraftController::getFlightTimeFromICAO($this->aircraft, $this->getDistanceAttribute());
-    }
-
-    public function getDistanceAttribute()
-    {
-        if(!$this->origin || !$this->destination) return 1;
-        return AirportController::getCircleDistanceBetweenAirports($this->origin, $this->destination);
-    }
-
-    public function getTimestampsAttribute()
-    {
-        if(!$this->origin || !$this->destination) return [1,1];
-        return SlotController::getSlotTimestamps($this);
-    }
-
-    public function getTimestamps()
-    {
-        if(!$this->origin || !$this->destination) return [1,1];
-        return SlotController::getSlotTimestamps($this);
-    }
-
-    public function aircraftData()
-    {
-        return $this->hasOne(Aircraft::class, 'icao', 'aircraft');
-    }
 }
