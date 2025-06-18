@@ -1,40 +1,48 @@
 <?php
+
 namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpFoundation\Response;
 
 class HQAPIService
 {
     const DEFAULT_ENDPOINT = 'https://api.ivao.aero/v2';
 
-    public function getAirportDataByIcao($airportIcao) {
+    public function getAirportDataByIcao($airportIcao)
+    {
+        $endpoint = $this->getApiEndpoint() . "/airports/$airportIcao";
+        $response = Http::withHeaders($this->getAuthHeaders())->get($endpoint);
+        $data = $response->json();
 
-        try {
-            $endpoint = $this->getApiEndpoint() . "/airports/$airportIcao";
-            $response = Http::withHeaders($this->getAuthHeaders())->get($endpoint);
+        Log::info('API response received', ['endpoint' => $endpoint, 'response' => $data, 'status' => $response->status()]);
 
-            return $response->throw()->json();
-        } catch (\Exception $e) {
-            Log::critical($e, ['icao' => $airportIcao]);
-            return abort(418, "airport.notFound");
+        if ($response->status() === Response::HTTP_NOT_FOUND) {
+            abort(404, "airport.notFound");
         }
 
+        if ($response->status() !== Response::HTTP_OK) {
+            abort(500, "airport.requestFailed");
+        }
+
+        return $data;
     }
 
-    private function getAuthHeaders() {
-        return [
-            'apiKey' => env('IVAO_API_KEY')
-        ];
-    }
-
-    private function getApiEndpoint() {
+    private function getApiEndpoint()
+    {
         $result = env('IVAO_API_ENDPOINT');
         if (empty($result)) {
             $result = HQAPIService::DEFAULT_ENDPOINT;
         }
-
         return $result;
+    }
+
+    private function getAuthHeaders()
+    {
+        return [
+            'apiKey' => env('IVAO_API_KEY')
+        ];
     }
 }
 

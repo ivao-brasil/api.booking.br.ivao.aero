@@ -13,13 +13,22 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @property int $id
  * @property string|null $flightNumber
+ * @property bool $isFixedFlightNumber
  * @property string|null $origin
+ * @property bool $isFixedOrigin
  * @property string|null $destination
- * @property string $type
- * @property int $private
- * @property string $slotTime
+ * @property bool $isFixedDestination
+ * @property \Illuminate\Support\Carbon $etibOrigin
+ * @property bool isFixedEtibOrigin
+ * @property \Illuminate\Support\Carbon $etobOrigin
+ * @property bool isFixedEtobOrigin
+ * @property \Illuminate\Support\Carbon $etibDestination
+ * @property bool isFixedEtibDestination
+ * @property \Illuminate\Support\Carbon $etobDestination
+ * @property bool isFixedEtobDestination
  * @property string|null $gate
  * @property string|null $aircraft
+ * @property bool $isFixedAircraft
  * @property int|null $pilotId
  * @property int $eventId
  * @property \Illuminate\Support\Carbon|null $bookingTime
@@ -46,9 +55,6 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Slot whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Slot whereOrigin($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Slot wherePilotId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Slot wherePrivate($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Slot whereSlotTime($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Slot whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Slot whereUpdatedAt($value)
  * @mixin \Eloquent
  */
@@ -56,16 +62,25 @@ class Slot extends Model
 {
     protected $fillable = [
         'flightNumber',
+        'isFixedFlightNumber',
         'origin',
+        'isFixedOrigin',
         'destination',
-        'type',
-        'slotTime',
+        'isFixedDestination',
+        'etibOrigin',
+        'isFixedEtibOrigin',
+        'etobOrigin',
+        'isFixedEtobOrigin',
+        'etibDestination',
+        'isFixedEtibDestination',
+        'etobDestination',
+        'isFixedEtobDestination',
         'gate',
         'aircraft',
+        'isFixedAircraft',
         'route',
         'bookingTime',
-        'bookingStatus',
-        'private'
+        'bookingStatus'
     ];
 
     protected $hidden = [
@@ -75,11 +90,13 @@ class Slot extends Model
 
     public static $allowedQueryParams = [
         'flightNumber',
+        'isFixedFlightNumber',
         'aircraft',
-        'type',
-        'private',
+        'isFixedAircraft',
         'origin',
-        'destination'
+        'isFixedOrigin',
+        'destination',
+        'isFixedDestination'
     ];
 
     protected $appends = [
@@ -114,34 +131,5 @@ class Slot extends Model
     public static function _factory()
     {
         return SlotFactory::new();
-    }
-
-    public function getFlightTimeAttribute()
-    {
-        if(!$this->aircraft) return 1;
-        return AircraftController::getFlightTimeFromICAO($this->aircraft, $this->getDistanceAttribute());
-    }
-
-    public function getDistanceAttribute()
-    {
-        if(!$this->origin || !$this->destination) return 1;
-        return AirportController::getCircleDistanceBetweenAirports($this->origin, $this->destination);
-    }
-
-    public function getTimestampsAttribute()
-    {
-        if(!$this->origin || !$this->destination) return [1,1];
-        return SlotController::getSlotTimestamps($this);
-    }
-
-    public function getTimestamps()
-    {
-        if(!$this->origin || !$this->destination) return [1,1];
-        return SlotController::getSlotTimestamps($this);
-    }
-
-    public function aircraftData()
-    {
-        return $this->hasOne(Aircraft::class, 'icao', 'aircraft');
     }
 }
