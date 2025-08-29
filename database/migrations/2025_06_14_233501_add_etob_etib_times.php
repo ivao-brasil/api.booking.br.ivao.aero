@@ -15,13 +15,13 @@ class AddEtobEtibTimes extends Migration
     {
         Schema::table('slots', function (Blueprint $table) {
             $table->dropColumn('slottime');
-            $table->dateTime('etibOrigin')->default(null)->after('isFixedDestination');
+            $table->dateTime('etibOrigin')->after('isFixedDestination');
             $table->boolean('isFixedEtibOrigin')->default(false)->after('etibOrigin');
-            $table->dateTime('etobOrigin')->default(null)->after('isFixedEtibOrigin');
+            $table->dateTime('etobOrigin')->after('isFixedEtibOrigin');
             $table->boolean('isFixedEtobOrigin')->default(false)->after('etobOrigin');
-            $table->dateTime('etibDestination')->default(null)->after('isFixedEtobOrigin');
+            $table->dateTime('etibDestination')->after('isFixedEtobOrigin');
             $table->boolean('isFixedEtibDestination')->default(false)->after('etibDestination');
-            $table->dateTime('etobDestination')->default(null)->after('isFixedEtibDestination');
+            $table->dateTime('etobDestination')->after('isFixedEtibDestination');
             $table->boolean('isFixedEtobDestination')->default(false)->after('etobDestination');
         });
     }
