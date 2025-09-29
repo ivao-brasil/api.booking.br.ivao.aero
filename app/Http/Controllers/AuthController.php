@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Services\HQAPIService;
 use App\Services\IvaoLoginService;
 use App\Services\JwtService;
 use Illuminate\Http\Request;
@@ -10,13 +11,23 @@ use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
+
+    private $hqApi;
+
+    public function __construct(HQAPIService $hqApi)
+    {
+        $this->hqApi = $hqApi;
+    }
+
     public function auth(Request $request) {
         $this->validate($request, [
             'ivao-token' => 'required'
         ]);
 
         try {
-            $ivaoUser = IvaoLoginService::getAuthData($request->get('ivao-token'));
+            IvaoLoginService::getAuthData($request->get('ivao-token'));
+
+            $ivaoUser = $this->hqApi->getUserInfo();
 
             $user = User::updateOrCreate(['vid' => $ivaoUser['vid']], [
                 'vid' => $ivaoUser['vid'],
