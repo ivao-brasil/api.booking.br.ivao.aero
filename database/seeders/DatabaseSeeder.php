@@ -25,7 +25,6 @@ class DatabaseSeeder extends Seeder
 
         Event::_factory()
             ->has(Slot::_factory()->count(100))
-            ->has(Slot::_factory()->count(25)->private())
             ->has(EventAirport::_factory()
                     ->has(Scenery::_factory()->count(5))
                     ->count(1)

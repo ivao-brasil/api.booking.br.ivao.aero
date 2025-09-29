@@ -1,12 +1,10 @@
-FROM php:7.4-apache-buster
+FROM php:8.1-apache-buster
 
 
-RUN apt-get update -yqq && \
-    apt-get install -y apt-utils zip unzip && \
-    apt-get install -y nano && \
-    apt-get install -y git &&\
-    apt-get install -y libzip-dev libpq-dev && \
-    a2enmod rewrite && \
+RUN apt update -yqq && \
+    apt install -y apt-utils zip unzip nano git libzip-dev libpq-dev
+
+RUN a2enmod rewrite && \
     docker-php-ext-install pdo_mysql && \
     docker-php-ext-install pgsql && \
     docker-php-ext-configure zip && \

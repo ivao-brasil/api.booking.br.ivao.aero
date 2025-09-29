@@ -2,20 +2,28 @@ on:
   push:
     branches:
       - stage
-      
+
 name: 🚀 Deploy to the Stage enviroment
 jobs:
   web-deploy:
     name: 🎉 Deploy
     runs-on: ubuntu-latest
+    environment: Stage
     steps:
-    - name: 🚚 Get latest code
-      uses: actions/checkout@v2
-    
-    - name: 📂 Sync files
-      uses: SamKirkland/FTP-Deploy-Action@4.1.0
-      with:
-        server: ${{ secrets.stage_ftp_host }}
-        username: ${{ secrets.stage_ftp_username }}
-        password: ${{ secrets.stage_ftp_password }}
-        server-dir: /
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v2
+
+      - name: 📂 Sync files
+        if: ${{ vars.IS_DEPLOYMENT_ENABLED == 'true' }}
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./
+          server-dir: ${{ secrets.SERVER_DIR }}
+          exclude: |
+            storage/app/logos/**
+            tests/**
+            .github/**
+            .git/**

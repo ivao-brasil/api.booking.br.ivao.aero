@@ -17,7 +17,6 @@ class EventDataExporterController extends Controller
         'flightNumber',
         'origin',
         'destination',
-        'private',
         'slotTime',
         'gate',
         'aircraft',

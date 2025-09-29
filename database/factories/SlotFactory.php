@@ -13,13 +13,18 @@ class SlotFactory extends Factory
     {
         return [
             'flightNumber' => $this->faker->randomElement(['TAM', 'GLO', 'AZU', 'BAW', 'DLH']) . $this->faker->randomNumber(4),
+            'isFixedFlightNumber' => false,
             'origin' => $this->faker->randomElement(['SBGR', 'SBSP', 'SBPA', 'SBCT', 'SBBE', 'SBBR']),
+            'isFixedOrigin' => false,
             'destination' => $this->faker->randomElement(['SBGR', 'SBSP', 'SBPA', 'SBCT', 'SBBE', 'SBBR']),
-            'type' => $this->faker->randomElement(['takeoff', 'landing']),
-            'private' => 0,
-            'slotTime' => $this->faker->time('Hi'),
+            'isFixedDestination' => false,
+            'etibOrigin' => $this->faker->dateTime(),
+            'etobOrigin' =>  $this->faker->dateTime(),
+            'etibDestination' => $this->faker->dateTime(),
+            'etobDestination' =>  $this->faker->dateTime(),
             'gate' => $this->faker->randomNumber(3),
             'aircraft' => $this->faker->randomElement(['B733', 'AT76', 'A319', 'A320', 'A20N', 'A321', 'A21N', 'B738', 'B38M', 'E190', 'E295']),
+            'isFixedAircraft' => false,
             'bookingStatus' => 'free'
         ];
     }
@@ -36,8 +41,7 @@ class SlotFactory extends Factory
                 'origin' => $attributes['type'] == 'takeoff' ? $attributes['origin'] : null,
                 'destination' => $attributes['type'] == 'landing' ? $attributes['destination'] : null,
                 'flightNumber' => null,
-                'aircraft' => null,
-                'private' => 1
+                'aircraft' => null
             ];
         });
     }
