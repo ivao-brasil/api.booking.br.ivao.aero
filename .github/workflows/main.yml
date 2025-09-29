@@ -8,11 +8,13 @@ jobs:
   web-deploy:
     name: 🎉 Deploy
     runs-on: ubuntu-latest
+    environment: Production
     steps:
       - name: 🚚 Get latest code
         uses: actions/checkout@v2
 
       - name: 📂 Sync files
+        if: ${{ vars.IS_DEPLOYMENT_ENABLED == 'true' }}
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_HOST }}
