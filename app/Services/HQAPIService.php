@@ -29,6 +29,25 @@ class HQAPIService
         return $data;
     }
 
+    public function getUserInfo($vid = 'me')
+    {
+        $endpoint = $this->getApiEndpoint() . "/users/$vid";
+        $response = Http::withHeaders($this->getAuthHeaders())->get($endpoint);
+        $data = $response->json();
+
+        Log::info('API response received', ['endpoint' => $endpoint, 'response' => $data, 'status' => $response->status()]);
+
+        if ($response->status() === Response::HTTP_NOT_FOUND) {
+            abort(404, "user.notFound");
+        }
+
+        if ($response->status() !== Response::HTTP_OK) {
+            abort(500, "user.requestFailed");
+        }
+
+        return $data;
+    }
+
     private function getApiEndpoint()
     {
         $result = env('IVAO_API_ENDPOINT');
