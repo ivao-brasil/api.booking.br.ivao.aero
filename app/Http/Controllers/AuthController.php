@@ -25,9 +25,20 @@ class AuthController extends Controller
         ]);
 
         try {
-            IvaoLoginService::getAuthData($request->get('ivao-token'));
+            $authResponse = IvaoLoginService::getAuthData($request->get('ivao-token'));
 
-            $ivaoUser = $this->hqApi->getUserInfo();
+            // get access_token as jwt and extract field sub from payload
+
+            if(!isset($authResponse['access_token']))
+                return response()->json(['error' => 'auth.invalidToken'], 403);
+            $tokenParts = explode('.', $authResponse['access_token']);
+            if(count($tokenParts) != 3)
+                return response()->json(['error' => 'auth.invalidToken'], 403);
+            $payload = json_decode(base64_decode($tokenParts[1]), true);
+            if(!isset($payload['sub']))
+                return response()->json(['error' => 'auth.invalidToken'], 403);
+
+            $ivaoUser = $this->hqApi->getUserInfo($payload['sub']);
 
             $user = User::updateOrCreate(['vid' => $ivaoUser['vid']], [
                 'vid' => $ivaoUser['vid'],
