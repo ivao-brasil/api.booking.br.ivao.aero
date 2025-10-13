@@ -25,7 +25,7 @@ class AuthController extends Controller
         ]);
 
         try {
-            $authResponse = IvaoLoginService::getAuthData($request->get('ivao-token'));
+            $authResponse = IvaoLoginService::getAccessTokenFromAuthCode($request->get('ivao-token'));
 
             // get access_token as jwt and extract field sub from payload
 

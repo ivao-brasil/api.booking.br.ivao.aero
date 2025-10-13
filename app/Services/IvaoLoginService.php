@@ -9,7 +9,7 @@ class IvaoLoginService
 {
     private const ENDPOINT = 'https://api.ivao.aero/v2/oauth/token';
 
-    public static function validateAuthCode($authCode, $codeVerifier = '', $nonce = '')
+    public static function getAccessTokenFromAuthCode($authCode, $codeVerifier = '', $nonce = '')
     {
         $data = [
             'grant_type' => 'authorization_code',
