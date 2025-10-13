@@ -41,16 +41,16 @@ class AuthController extends Controller
             $ivaoUser = $this->hqApi->getUserInfo($payload['sub']);
 
             $user = User::updateOrCreate(['vid' => $ivaoUser['vid']], [
-                'vid' => $ivaoUser['vid'],
+                'vid' => $ivaoUser['id'],
                 'firstName' => $ivaoUser['firstname'],
                 'lastName' => $ivaoUser['lastname'],
-                'atcRating' => $ivaoUser['ratingatc'],
-                'pilotRating' => $ivaoUser['ratingpilot'],
-                'division' => $ivaoUser['division'],
-                'country'=> $ivaoUser['country']
+                'atcRating' => $ivaoUser['rating']['atcRating']['shortName'],
+                'pilotRating' => $ivaoUser['rating']['pilotRating']['shortName'],
+                'division' => $ivaoUser['divisionId'],
+                'country'=> $ivaoUser['countryId']
             ]);
 
-            User::where('vid', $ivaoUser['vid'])
+            User::where('vid', $ivaoUser['id'])
                     ->update(['admin' => AuthController::canAccessAdmin($ivaoUser)]);
 
             $user->refresh();
@@ -60,7 +60,7 @@ class AuthController extends Controller
 
             return response()->json([
                 'jwt' => JwtService::encode([
-                    'vid' => $ivaoUser['vid'],
+                    'vid' => $ivaoUser['id'],
                     'id' => $user['id']
                 ])
             ]);
