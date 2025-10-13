@@ -72,7 +72,7 @@ class AuthController extends Controller
 
     public static function canAccessAdmin($ivaoUser) {
 
-        if(!$ivaoUser['staff']) return 0;
+        if(!$ivaoUser['userStaffPositions']) return 0;
 
         $division   =   env('IVAO_DIVISION');
 
@@ -91,8 +91,11 @@ class AuthController extends Controller
 
         $regex .= "/";
 
-
-        if(preg_match($regex, $ivaoUser['staff'])) return 1;
+        foreach($ivaoUser['userStaffPositions'] as $staffPosition) {
+            if(preg_match($regex, $staffPosition['id'])) {
+                return 1;
+            }
+        }
 
         return 0;
     }
