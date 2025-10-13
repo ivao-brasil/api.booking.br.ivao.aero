@@ -2,11 +2,12 @@
 
 namespace App\Services;
 
-use App\Models\User;
 use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 
 class JwtService
 {
+    private static $alg = 'HS256';
     public static function encode($data) {
         $payload = array(
             "iss" => env('APP_URL'),
@@ -16,10 +17,13 @@ class JwtService
             "sub" => $data
         );
 
-        return JWT::encode($payload, env('APP_KEY'));
+        $key = env('JWT_SECRET');
+
+        return JWT::encode($payload, $key, self::$alg);
     }
 
-    public static function decode(String $jwt) {
-        return Jwt::decode($jwt, env('APP_KEY'), array('HS256'));
+    public static function decode(string $jwt) {
+        $key = new Key(env('JWT_SECRET'), self::$alg);
+        return JWT::decode($jwt, $key);
     }
 }
