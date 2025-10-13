@@ -44,8 +44,8 @@ class AuthController extends Controller
                 'vid' => $ivaoUser['id'],
                 'firstName' => $ivaoUser['firstName'],
                 'lastName' => $ivaoUser['lastName'],
-                'atcRating' => $ivaoUser['rating']['atcRating']['shortName'],
-                'pilotRating' => $ivaoUser['rating']['pilotRating']['shortName'],
+                'atcRating' => $ivaoUser['rating']['atcRating']['id'],
+                'pilotRating' => $ivaoUser['rating']['pilotRating']['id'],
                 'division' => $ivaoUser['divisionId'],
                 'country'=> $ivaoUser['countryId']
             ]);
