@@ -40,7 +40,7 @@ class AuthController extends Controller
 
             $ivaoUser = $this->hqApi->getUserInfo($payload['sub']);
 
-            $user = User::updateOrCreate(['vid' => $ivaoUser['vid']], [
+            $user = User::updateOrCreate(['vid' => $ivaoUser['id']], [
                 'vid' => $ivaoUser['id'],
                 'firstName' => $ivaoUser['firstname'],
                 'lastName' => $ivaoUser['lastname'],
