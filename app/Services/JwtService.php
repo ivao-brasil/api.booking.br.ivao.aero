@@ -16,10 +16,12 @@ class JwtService
             "sub" => $data
         );
 
-        return JWT::encode($payload, env('APP_KEY'));
+        $key = env('JWT_SECRET');
+        $alg = 'HS256';
+        return JWT::encode($payload, $key, $alg);
     }
 
     public static function decode(String $jwt) {
-        return Jwt::decode($jwt, env('APP_KEY'), array('HS256'));
+        return JWT::decode($jwt, env('JWT_SECRET'), ['HS256']);
     }
 }

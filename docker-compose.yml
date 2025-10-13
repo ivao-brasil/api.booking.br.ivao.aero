@@ -12,7 +12,7 @@ services:
     environment:
       - APP_NAME=Lumen
       - APP_ENV=local
-      - APP_KEY=123456
+      - JWT_SECRET=123456
       - APP_DEBUG=true
       - APP_URL=http://localhost
       - APP_TIMEZONE=UTC

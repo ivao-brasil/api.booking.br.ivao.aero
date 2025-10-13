@@ -58,9 +58,12 @@ class AuthController extends Controller
             if(!$user->admin&&env('APP_ENV')=='stage')
                 return response()->json(['error' => 'admin.noAdmin'], 401);
 
-            $key = env('JWT_SECRET');
-            $alg = 'HS256';
-            return JWT::encode($payload, $key, $alg);
+            return response()->json([
+                'jwt' => JwtService::encode([
+                    'vid' => $ivaoUser['id'],
+                    'id' => $user['id']
+                ])
+            ]);
         } catch (\Exception $e) {
             Log::error($e);
             return response()->json(['error' => 'auth.error'], 403);
