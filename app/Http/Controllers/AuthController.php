@@ -42,8 +42,8 @@ class AuthController extends Controller
 
             $user = User::updateOrCreate(['vid' => $ivaoUser['id']], [
                 'vid' => $ivaoUser['id'],
-                'firstName' => $ivaoUser['firstname'],
-                'lastName' => $ivaoUser['lastname'],
+                'firstName' => $ivaoUser['firstName'],
+                'lastName' => $ivaoUser['lastName'],
                 'atcRating' => $ivaoUser['rating']['atcRating']['shortName'],
                 'pilotRating' => $ivaoUser['rating']['pilotRating']['shortName'],
                 'division' => $ivaoUser['divisionId'],
