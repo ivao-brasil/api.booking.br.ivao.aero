@@ -2,7 +2,8 @@
 
 namespace App\Http;
 
-use Illuminate\Foundation\Http\Kernel as HttpKernel;
+
+use Symfony\Component\HttpKernel\HttpKernel;
 
 class Kernel extends HttpKernel
 {
