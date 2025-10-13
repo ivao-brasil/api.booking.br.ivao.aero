@@ -30,13 +30,13 @@ class AuthController extends Controller
             // get access_token as jwt and extract field sub from payload
 
             if(!isset($authResponse['access_token']))
-                return response()->json(['error' => 'auth.invalidToken'], 403);
+                return response()->json(['error' => 'auth.invalidToken1', 'sub' => 1], 403);
             $tokenParts = explode('.', $authResponse['access_token']);
             if(count($tokenParts) != 3)
-                return response()->json(['error' => 'auth.invalidToken'], 403);
+                return response()->json(['error' => 'auth.invalidToken2', 'sub' => 2], 403);
             $payload = json_decode(base64_decode($tokenParts[1]), true);
             if(!isset($payload['sub']))
-                return response()->json(['error' => 'auth.invalidToken'], 403);
+                return response()->json(['error' => 'auth.invalidToken3', 'sub' => 3], 403);
 
             $ivaoUser = $this->hqApi->getUserInfo($payload['sub']);
 
