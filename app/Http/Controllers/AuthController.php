@@ -22,7 +22,7 @@ class AuthController extends Controller
     public function auth(Request $request) {
         $this->validate($request, [
             'ivaoToken' => 'required',
-            'clientHost' => 'required|url'
+            'clientHost' => 'required'
         ]);
 
         try {
