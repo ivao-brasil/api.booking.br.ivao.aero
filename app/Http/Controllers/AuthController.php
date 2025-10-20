@@ -21,22 +21,23 @@ class AuthController extends Controller
 
     public function auth(Request $request) {
         $this->validate($request, [
-            'ivao-token' => 'required'
+            'ivaoToken' => 'required',
+            'clientHost' => 'required'
         ]);
 
         try {
-            $authResponse = IvaoLoginService::getAccessTokenFromAuthCode($request->get('ivao-token'));
+            $authResponse = IvaoLoginService::getAccessTokenFromAuthCode($request->get('ivaoToken'), $request->get('clientHost'));
 
             // get access_token as jwt and extract field sub from payload
 
             if(!isset($authResponse['access_token']))
-                return response()->json(['error' => 'auth.invalidToken1', 'sub' => 1], 403);
+                return response()->json(['error' => 'auth.invalidToken'], 403);
             $tokenParts = explode('.', $authResponse['access_token']);
             if(count($tokenParts) != 3)
-                return response()->json(['error' => 'auth.invalidToken2', 'sub' => 2], 403);
+                return response()->json(['error' => 'auth.invalidToken'], 403);
             $payload = json_decode(base64_decode($tokenParts[1]), true);
             if(!isset($payload['sub']))
-                return response()->json(['error' => 'auth.invalidToken3', 'sub' => 3], 403);
+                return response()->json(['error' => 'auth.invalidToken'], 403);
 
             $ivaoUser = $this->hqApi->getUserInfo($payload['sub']);
 
