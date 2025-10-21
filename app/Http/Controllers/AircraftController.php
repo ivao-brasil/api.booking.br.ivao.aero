@@ -20,14 +20,6 @@ class AircraftController extends Controller
         $this->paginationService = $paginationService;
     }
 
-    //Returns the flight time in seconds
-    public static function getFlightTimeFromICAO(string $aircraftIcao, float $distance)
-    {
-        $aircraft = Aircraft::where('icao', $aircraftIcao)->first();
-        if(!$aircraft) return 1;
-        return round(($distance/$aircraft->speed), 2) * 60 * 60;
-    }
-
     public function get(Request $request)
     {
         $this->authorize('getAll', Aircraft::class);

@@ -297,6 +297,18 @@ class SlotController extends Controller
 
         $slots = collect($csv->data)->map(function ($data) use ($eventId) {
             $data['eventId'] = $eventId;
+            if (isset($data['etobOrigin']) && $data['etobOrigin'] == '') {
+                $data['etobOrigin'] = null;
+            }
+            if (isset($data['etibOrigin']) && $data['etibOrigin'] == '') {
+                $data['etibOrigin'] = null;
+            }
+            if (isset($data['etobDestination']) && $data['etobDestination'] == '') {
+                $data['etobDestination'] = null;
+            }
+            if (isset($data['etibDestination']) && $data['etibDestination'] == '') {
+                $data['etibDestination'] = null;
+            }
             return $data;
         })->toArray();
 
@@ -370,11 +382,6 @@ class SlotController extends Controller
         $case2 = $slotTwo->etobOrigin < $slotOne->etibDestination;
 
         return $case1 == false && $case2 == false;
-    }
-
-    public static function getFlightTime($slot){
-        $distance = AirportController::getCircleDistanceBetweenAirports($slot->origin, $slot->destination);
-        return AircraftController::getFlightTimeFromICAO($slot->aircraft, $distance);
     }
 
     public function isAirportExistent($attribute, $value, $parameters, $validator) {
