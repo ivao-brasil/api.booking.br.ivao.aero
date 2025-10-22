@@ -49,11 +49,6 @@ class Slot extends Model
         'isFixedDestination'
     ];
 
-    protected $appends = [
-        'distance',
-        'timestamps'
-    ];
-
     protected $casts = [
         'bookingTime' => 'datetime:Y-m-d\TH:i:sP'
     ];
