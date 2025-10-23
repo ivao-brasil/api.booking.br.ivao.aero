@@ -204,9 +204,9 @@ class SlotController extends Controller
 
     public function list(string $eventId, Request $request)
     {
-        $perPage = (int)$request->query('perPage', 5,);
+        $perPage = (int)$request->query('perPage', 25);
 
-        $slots = Slot::with('owner')->where('eventId', $eventId)->orderBy('etobOrigin');
+        $slots = Slot::with('owner')->where('eventId', $eventId);
 
         $queryParams = (array)$request->query();
 
