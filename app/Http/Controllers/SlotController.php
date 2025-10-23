@@ -122,7 +122,9 @@ class SlotController extends Controller
                 $validationRules
             ));
 
-            if($slot->event->slots->where('flightNumber', $request->input('flightNumber'))->count() > 0){
+            if($slot->event->slots->where('flightNumber', $request->input('flightNumber'))
+                    ->where('isFixedFlightNumber', false)
+                    ->count() > 0) {
                 abort(422, "book.duplicateNumber");
             }
 
