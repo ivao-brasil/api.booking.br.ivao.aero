@@ -24,10 +24,8 @@ class SlotController extends Controller
         'destination' => 'nullable|string|regex:/^[A-Z]{4}$/|isAirportExistent',
         'gate' => 'nullable|string|alpha_num|max:10',
         'aircraft' => 'nullable|string|regex:/^[A-Z0-9]{4}$/',
-        'etaOrigin' => 'nullable|date_format:Y-m-d H:i',
         'eobtOrigin' => 'nullable|date_format:Y-m-d H:i',
         'etaDestination' => 'nullable|date_format:Y-m-d H:i',
-        'eobtDestination' => 'nullable|date_format:Y-m-d H:i',
     ];
 
     public function __construct(PaginationService $paginationService)
@@ -72,7 +70,7 @@ class SlotController extends Controller
         $this->authorize('bookUpdate', [$slot, $action]);
 
         if ($action === 'book') {
-            $validationRules = ['etaOrigin', 'eobtOrigin', 'etaDestination', 'eobtDestination', 'gate'];
+            $validationRules = ['eobtOrigin', 'etaDestination', 'gate'];
             if(!$slot->isFixedFlightNumber) {
                 $validationRules[] = 'flightNumber';
             }
@@ -101,20 +99,12 @@ class SlotController extends Controller
                 $request->merge(['aircraft' => $slot->aircraft]);
             }
 
-            if($slot->isFixedEtaOrigin) {
-                $request->merge(['etaOrigin' => $slot->etaOrigin]);
-            }
-
             if($slot->isFixedeobtOrigin) {
                 $request->merge(['eobtOrigin' => $slot->eobtOrigin]);
             }
 
             if($slot->isFixedEtaDestination) {
                 $request->merge(['etaDestination' => $slot->etaDestination]);
-            }
-
-            if($slot->isFixedeobtDestination) {
-                $request->merge(['eobtDestination' => $slot->eobtDestination]);
             }
 
             $this->validate($request, array_intersect_key(
@@ -162,20 +152,12 @@ class SlotController extends Controller
                 $slot->aircraft = null;
             }
 
-            if(!$slot->isFixedEtaOrigin) {
-                $slot->etaOrigin = null;
-            }
-
             if(!$slot->isFixedeobtOrigin) {
                 $slot->eobtOrigin = null;
             }
 
             if(!$slot->isFixedEtaDestination) {
                 $slot->etaDestination = null;
-            }
-
-            if(!$slot->isFixedeobtDestination) {
-                $slot->eobtDestination = null;
             }
 
             $slot->bookingTime = null;
@@ -302,12 +284,6 @@ class SlotController extends Controller
             if (isset($data['eobtOrigin']) && $data['eobtOrigin'] == '') {
                 $data['eobtOrigin'] = null;
             }
-            if (isset($data['etaOrigin']) && $data['etaOrigin'] == '') {
-                $data['etaOrigin'] = null;
-            }
-            if (isset($data['eobtDestination']) && $data['eobtDestination'] == '') {
-                $data['eobtDestination'] = null;
-            }
             if (isset($data['etaDestination']) && $data['etaDestination'] == '') {
                 $data['etaDestination'] = null;
             }
@@ -377,9 +353,6 @@ class SlotController extends Controller
             return false;
         }
 
-        //SlotOne ENDS BEFORE SlotTwo starts
-        $case1 = $slotOne->eobtDestination < $slotTwo->etaOrigin;
-
         //SlotTwo ENDS BEFORE SlotOne starts
         $case2 = $slotTwo->eobtOrigin < $slotOne->etaDestination;
 
@@ -392,7 +365,7 @@ class SlotController extends Controller
 
     public function validateFullSlot(Request $request): void
     {
-        $validationRules = ['gate', 'etaOrigin', 'eobtOrigin', 'etaDestination', 'eobtDestination'];
+        $validationRules = ['gate', 'eobtOrigin', 'etaDestination'];
 
         if ($request->input('origin')) {
             $validationRules[] = 'origin';

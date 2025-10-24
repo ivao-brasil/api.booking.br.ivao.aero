@@ -17,8 +17,6 @@ class Slot extends Model
         'isFixedOrigin',
         'destination',
         'isFixedDestination',
-        'etaOrigin',
-        'isFixedEtaOrigin',
         'eobtOrigin',
         'isFixedeobtOrigin',
         'etaDestination',
