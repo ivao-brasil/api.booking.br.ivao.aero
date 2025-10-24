@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddEtobEtibTimes extends Migration
+class AddeobtEtaTimes extends Migration
 {
     /**
      * Run the migrations.
@@ -15,14 +15,10 @@ class AddEtobEtibTimes extends Migration
     {
         Schema::table('slots', function (Blueprint $table) {
             $table->dropColumn('slottime');
-            $table->dateTime('etibOrigin')->nullable(true)->after('isFixedDestination');
-            $table->boolean('isFixedEtibOrigin')->default(false)->after('etibOrigin');
-            $table->dateTime('etobOrigin')->nullable(true)->after('isFixedEtibOrigin');
-            $table->boolean('isFixedEtobOrigin')->default(false)->after('etobOrigin');
-            $table->dateTime('etibDestination')->nullable(true)->after('isFixedEtobOrigin');
-            $table->boolean('isFixedEtibDestination')->default(false)->after('etibDestination');
-            $table->dateTime('etobDestination')->nullable(true)->after('isFixedEtibDestination');
-            $table->boolean('isFixedEtobDestination')->default(false)->after('etobDestination');
+            $table->dateTime('eobtOrigin')->nullable(true)->after('isFixedDestination');
+            $table->boolean('isFixedeobtOrigin')->default(false)->after('eobtOrigin');
+            $table->dateTime('etaDestination')->nullable(true)->after('isFixedeobtOrigin');
+            $table->boolean('isFixedEtaDestination')->default(false)->after('etaDestination');
         });
     }
 
@@ -35,14 +31,10 @@ class AddEtobEtibTimes extends Migration
     {
         Schema::table('slots', function (Blueprint $table) {
             $table->string('slottime', 4);
-            $table->dropColumn('etibOrigin');
-            $table->dropColumn('isFixedEtibOrigin');
-            $table->dropColumn('etobOrigin');
-            $table->dropColumn('isFixedEtobOrigin');
-            $table->dropColumn('etibDestination');
-            $table->dropColumn('isFixedEtibDestination');
-            $table->dropColumn('etobDestination');
-            $table->dropColumn('isFixedEtobDestination');
+            $table->dropColumn('eobtOrigin');
+            $table->dropColumn('isFixedeobtOrigin');
+            $table->dropColumn('etaDestination');
+            $table->dropColumn('isFixedEtaDestination');
         });
     }
 }

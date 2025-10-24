@@ -24,10 +24,8 @@ class SlotController extends Controller
         'destination' => 'nullable|string|regex:/^[A-Z]{4}$/|isAirportExistent',
         'gate' => 'nullable|string|alpha_num|max:10',
         'aircraft' => 'nullable|string|regex:/^[A-Z0-9]{4}$/',
-        'etibOrigin' => 'nullable|date_format:Y-m-d H:i',
-        'etobOrigin' => 'nullable|date_format:Y-m-d H:i',
-        'etibDestination' => 'nullable|date_format:Y-m-d H:i',
-        'etobDestination' => 'nullable|date_format:Y-m-d H:i',
+        'eobtOrigin' => 'nullable|date_format:Y-m-d H:i',
+        'etaDestination' => 'nullable|date_format:Y-m-d H:i',
     ];
 
     public function __construct(PaginationService $paginationService)
@@ -72,7 +70,7 @@ class SlotController extends Controller
         $this->authorize('bookUpdate', [$slot, $action]);
 
         if ($action === 'book') {
-            $validationRules = ['etibOrigin', 'etobOrigin', 'etibDestination', 'etobDestination', 'gate'];
+            $validationRules = ['eobtOrigin', 'etaDestination', 'gate'];
             if(!$slot->isFixedFlightNumber) {
                 $validationRules[] = 'flightNumber';
             }
@@ -101,20 +99,12 @@ class SlotController extends Controller
                 $request->merge(['aircraft' => $slot->aircraft]);
             }
 
-            if($slot->isFixedEtibOrigin) {
-                $request->merge(['etibOrigin' => $slot->etibOrigin]);
+            if($slot->isFixedeobtOrigin) {
+                $request->merge(['eobtOrigin' => $slot->eobtOrigin]);
             }
 
-            if($slot->isFixedEtobOrigin) {
-                $request->merge(['etobOrigin' => $slot->etobOrigin]);
-            }
-
-            if($slot->isFixedEtibDestination) {
-                $request->merge(['etibDestination' => $slot->etibDestination]);
-            }
-
-            if($slot->isFixedEtobDestination) {
-                $request->merge(['etobDestination' => $slot->etobDestination]);
+            if($slot->isFixedEtaDestination) {
+                $request->merge(['etaDestination' => $slot->etaDestination]);
             }
 
             $this->validate($request, array_intersect_key(
@@ -122,7 +112,9 @@ class SlotController extends Controller
                 $validationRules
             ));
 
-            if($slot->event->slots->where('flightNumber', $request->input('flightNumber'))->count() > 0){
+            if($slot->event->slots->where('flightNumber', $request->input('flightNumber'))
+                    ->where('isFixedFlightNumber', false)
+                    ->count() > 0) {
                 abort(422, "book.duplicateNumber");
             }
 
@@ -160,20 +152,12 @@ class SlotController extends Controller
                 $slot->aircraft = null;
             }
 
-            if(!$slot->isFixedEtibOrigin) {
-                $slot->etibOrigin = null;
+            if(!$slot->isFixedeobtOrigin) {
+                $slot->eobtOrigin = null;
             }
 
-            if(!$slot->isFixedEtobOrigin) {
-                $slot->etobOrigin = null;
-            }
-
-            if(!$slot->isFixedEtibDestination) {
-                $slot->etibDestination = null;
-            }
-
-            if(!$slot->isFixedEtobDestination) {
-                $slot->etobDestination = null;
+            if(!$slot->isFixedEtaDestination) {
+                $slot->etaDestination = null;
             }
 
             $slot->bookingTime = null;
@@ -202,9 +186,9 @@ class SlotController extends Controller
 
     public function list(string $eventId, Request $request)
     {
-        $perPage = (int)$request->query('perPage', 5,);
+        $perPage = (int)$request->query('perPage', 25);
 
-        $slots = Slot::with('owner')->where('eventId', $eventId)->orderBy('etobOrigin');
+        $slots = Slot::with('owner')->where('eventId', $eventId);
 
         $queryParams = (array)$request->query();
 
@@ -297,6 +281,21 @@ class SlotController extends Controller
 
         $slots = collect($csv->data)->map(function ($data) use ($eventId) {
             $data['eventId'] = $eventId;
+            if (isset($data['origin']) && $data['origin'] == '') {
+                $data['origin'] = null;
+            }
+            if (isset($data['destination']) && $data['destination'] == '') {
+                $data['destination'] = null;
+            }
+            if (isset($data['flightNumber']) && $data['flightNumber'] == '') {
+                $data['flightNumber'] = null;
+            }
+            if (isset($data['eobtOrigin']) && $data['eobtOrigin'] == '') {
+                $data['eobtOrigin'] = null;
+            }
+            if (isset($data['etaDestination']) && $data['etaDestination'] == '') {
+                $data['etaDestination'] = null;
+            }
             return $data;
         })->toArray();
 
@@ -341,6 +340,7 @@ class SlotController extends Controller
                     if($slotOne->id == $slotTwo->id) continue;
                     return SlotController::checkOverlappingSlots($slotOne, $slotTwo);
                 }
+                return false;
             });
 
             return [User::where('id', $pilotId)->first()->vid => $slotList];
@@ -363,18 +363,10 @@ class SlotController extends Controller
             return false;
         }
 
-        //SlotOne ENDS BEFORE SlotTwo starts
-        $case1 = $slotOne->etobDestination < $slotTwo->etibOrigin;
-
         //SlotTwo ENDS BEFORE SlotOne starts
-        $case2 = $slotTwo->etobOrigin < $slotOne->etibDestination;
+        $case2 = $slotTwo->eobtOrigin < $slotOne->etaDestination;
 
-        return $case1 == false && $case2 == false;
-    }
-
-    public static function getFlightTime($slot){
-        $distance = AirportController::getCircleDistanceBetweenAirports($slot->origin, $slot->destination);
-        return AircraftController::getFlightTimeFromICAO($slot->aircraft, $distance);
+        return $case2 == false;
     }
 
     public function isAirportExistent($attribute, $value, $parameters, $validator) {
@@ -383,7 +375,7 @@ class SlotController extends Controller
 
     public function validateFullSlot(Request $request): void
     {
-        $validationRules = ['gate', 'etibOrigin', 'etobOrigin', 'etibDestination', 'etobDestination'];
+        $validationRules = ['gate', 'eobtOrigin', 'etaDestination'];
 
         if ($request->input('origin')) {
             $validationRules[] = 'origin';
