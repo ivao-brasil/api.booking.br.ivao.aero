@@ -281,6 +281,15 @@ class SlotController extends Controller
 
         $slots = collect($csv->data)->map(function ($data) use ($eventId) {
             $data['eventId'] = $eventId;
+            if (isset($data['origin']) && $data['origin'] == '') {
+                $data['origin'] = null;
+            }
+            if (isset($data['destination']) && $data['destination'] == '') {
+                $data['destination'] = null;
+            }
+            if (isset($data['flightNumber']) && $data['flightNumber'] == '') {
+                $data['flightNumber'] = null;
+            }
             if (isset($data['eobtOrigin']) && $data['eobtOrigin'] == '') {
                 $data['eobtOrigin'] = null;
             }
@@ -331,6 +340,7 @@ class SlotController extends Controller
                     if($slotOne->id == $slotTwo->id) continue;
                     return SlotController::checkOverlappingSlots($slotOne, $slotTwo);
                 }
+                return false;
             });
 
             return [User::where('id', $pilotId)->first()->vid => $slotList];
@@ -356,7 +366,7 @@ class SlotController extends Controller
         //SlotTwo ENDS BEFORE SlotOne starts
         $case2 = $slotTwo->eobtOrigin < $slotOne->etaDestination;
 
-        return $case1 == false && $case2 == false;
+        return $case2 == false;
     }
 
     public function isAirportExistent($attribute, $value, $parameters, $validator) {
