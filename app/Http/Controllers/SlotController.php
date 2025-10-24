@@ -215,13 +215,26 @@ class SlotController extends Controller
             if($param == "type") {
                 if($value == "takeoff") {
                     $slots = $slots->where('isFixedOrigin', 1)
-                                   ->where('isFixedDestination', 0);
+                        ->where('isFixedDestination', 0)
+                        ->where('isPrivate', 0);
                 } else if($value == "landing") {
                     $slots = $slots->where('isFixedOrigin', 0)
-                                   ->where('isFixedDestination', 1);
+                        ->where('isFixedDestination', 1)
+                        ->where('isPrivate', 0);;
                 } else if($value == "takeoff_landing") {
                     $slots = $slots->where('isFixedOrigin', 1)
-                                   ->where('isFixedDestination', 1);
+                        ->where('isFixedDestination', 1)
+                        ->where('isPrivate', 0);;
+                } else if($value == "private_takeoff") {
+                    $slots = $slots->where('isFixedOrigin', 1)
+                        ->where('isFixedDestination', 0)
+                        ->where('isPrivate', 1);;
+                } else if($value == "private_landing") {
+                    $slots = $slots->where('isFixedOrigin', 0)
+                        ->where('isFixedDestination', 1)
+                        ->where('isPrivate', 1);;
+                } else if($value == "private") {
+                    $slots = $slots->where('isPrivate', 1);;
                 }
                 continue;
             }
@@ -303,25 +316,42 @@ class SlotController extends Controller
     }
 
     public function getEventSlotCountByType(string $eventId) {
-        $takeoffCount = Slot::where('eventId', $eventId)
+        $departureCount = Slot::where('eventId', $eventId)
             ->where('isFixedOrigin', 1)
             ->where('isFixedDestination', 0)
+            ->where('isPrivate', 0)
             ->count();
 
-        $landingCount = Slot::where('eventId', $eventId)
+        $arrivalCount = Slot::where('eventId', $eventId)
             ->where('isFixedOrigin', 0)
             ->where('isFixedDestination', 1)
+            ->where('isPrivate', 0)
             ->count();
 
-        $takeoffAndLanding = Slot::where('eventId', $eventId)
+        $departureAndArrivalCount = Slot::where('eventId', $eventId)
             ->where('isFixedOrigin', 1)
             ->where('isFixedDestination', 1)
+            ->where('isPrivate', 0)
+            ->count();
+
+        $privateDepartureCount = Slot::where('eventId', $eventId)
+            ->where('isFixedOrigin', 1)
+            ->where('isFixedDestination', 0)
+            ->where('isPrivate', 1)
+            ->count();
+
+        $privateArrivalCount = Slot::where('eventId', $eventId)
+            ->where('isFixedOrigin', 0)
+            ->where('isFixedDestination', 1)
+            ->where('isPrivate', 1)
             ->count();
 
         return response()->json([
-            'departure' => $takeoffCount,
-            'landing'   => $landingCount,
-            'departureLanding'   => $takeoffAndLanding
+            'departure' => $departureCount,
+            'landing'   => $arrivalCount,
+            'departureLanding'   => $departureAndArrivalCount,
+            'privateDeparture' => $privateDepartureCount,
+            'privateLanding'   => $privateArrivalCount,
         ]);
     }
 
