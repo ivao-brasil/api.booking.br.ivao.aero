@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
+use App\Models\EventAirport;
 use App\Models\Slot;
 use App\Models\User;
 use App\Services\PaginationService;
@@ -316,21 +317,23 @@ class SlotController extends Controller
     }
 
     public function getEventSlotCountByType(string $eventId) {
+        $airportIcao = EventAirport::where('eventId', $eventId)->pluck('icao')->toArray();
+
         $departureCount = Slot::where('eventId', $eventId)
-            ->where('isFixedOrigin', 1)
-            ->where('isFixedDestination', 0)
+            ->whereIn('origin', $airportIcao)
+            ->whereNotIn('destination', $airportIcao)
             ->where('isPrivate', 0)
             ->count();
 
         $arrivalCount = Slot::where('eventId', $eventId)
-            ->where('isFixedOrigin', 0)
-            ->where('isFixedDestination', 1)
+            ->whereIn('destination', $airportIcao)
+            ->whereNotIn('origin', $airportIcao)
             ->where('isPrivate', 0)
             ->count();
 
         $departureAndArrivalCount = Slot::where('eventId', $eventId)
-            ->where('isFixedOrigin', 1)
-            ->where('isFixedDestination', 1)
+            ->whereIn('origin', $airportIcao)
+            ->whereIn('destination', $airportIcao)
             ->where('isPrivate', 0)
             ->count();
 
