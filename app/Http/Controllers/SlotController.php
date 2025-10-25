@@ -7,6 +7,7 @@ use App\Models\EventAirport;
 use App\Models\Slot;
 use App\Models\User;
 use App\Services\PaginationService;
+use App\Utils\EventSlotRules\SlotRuleFactory;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Request;
@@ -190,6 +191,8 @@ class SlotController extends Controller
         $perPage = (int)$request->query('perPage', 25);
 
         $slots = Slot::with('owner')->where('eventId', $eventId);
+        $eventType = Event::where('id', $eventId)->first()->type;
+        $rule = SlotRuleFactory::make($eventType);
 
         $queryParams = (array)$request->query();
 
@@ -214,29 +217,7 @@ class SlotController extends Controller
             }
 
             if($param == "type") {
-                if($value == "takeoff") {
-                    $slots = $slots->where('isFixedOrigin', 1)
-                        ->where('isFixedDestination', 0)
-                        ->where('isPrivate', 0);
-                } else if($value == "landing") {
-                    $slots = $slots->where('isFixedOrigin', 0)
-                        ->where('isFixedDestination', 1)
-                        ->where('isPrivate', 0);;
-                } else if($value == "takeoff_landing") {
-                    $slots = $slots->where('isFixedOrigin', 1)
-                        ->where('isFixedDestination', 1)
-                        ->where('isPrivate', 0);;
-                } else if($value == "private_takeoff") {
-                    $slots = $slots->where('isFixedOrigin', 1)
-                        ->where('isFixedDestination', 0)
-                        ->where('isPrivate', 1);;
-                } else if($value == "private_landing") {
-                    $slots = $slots->where('isFixedOrigin', 0)
-                        ->where('isFixedDestination', 1)
-                        ->where('isPrivate', 1);;
-                } else if($value == "private") {
-                    $slots = $slots->where('isPrivate', 1);;
-                }
+                $slots = $rule->applyListTypeFilter($slots, $value);
                 continue;
             }
 
@@ -317,45 +298,9 @@ class SlotController extends Controller
     }
 
     public function getEventSlotCountByType(string $eventId) {
-        $airportIcao = EventAirport::where('eventId', $eventId)->pluck('icao')->toArray();
-
-        $departureCount = Slot::where('eventId', $eventId)
-            ->whereIn('origin', $airportIcao)
-            ->whereNotIn('destination', $airportIcao)
-            ->where('isPrivate', 0)
-            ->count();
-
-        $arrivalCount = Slot::where('eventId', $eventId)
-            ->whereIn('destination', $airportIcao)
-            ->whereNotIn('origin', $airportIcao)
-            ->where('isPrivate', 0)
-            ->count();
-
-        $departureAndArrivalCount = Slot::where('eventId', $eventId)
-            ->whereIn('origin', $airportIcao)
-            ->whereIn('destination', $airportIcao)
-            ->where('isPrivate', 0)
-            ->count();
-
-        $privateDepartureCount = Slot::where('eventId', $eventId)
-            ->where('isFixedOrigin', 1)
-            ->where('isFixedDestination', 0)
-            ->where('isPrivate', 1)
-            ->count();
-
-        $privateArrivalCount = Slot::where('eventId', $eventId)
-            ->where('isFixedOrigin', 0)
-            ->where('isFixedDestination', 1)
-            ->where('isPrivate', 1)
-            ->count();
-
-        return response()->json([
-            'departure' => $departureCount,
-            'landing'   => $arrivalCount,
-            'departureLanding'   => $departureAndArrivalCount,
-            'privateDeparture' => $privateDepartureCount,
-            'privateLanding'   => $privateArrivalCount,
-        ]);
+        $eventType = Event::where('id', $eventId)->first()->type;
+        $rule = SlotRuleFactory::make($eventType);
+        return $rule->getCounts($eventId);
     }
 
     public function listOverlappingSlots($eventId)
