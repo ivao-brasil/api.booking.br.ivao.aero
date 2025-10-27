@@ -230,6 +230,8 @@ class SlotController extends Controller
             $slotsQuery = $slotsQuery->where($param, 'LIKE', "%" . $value . "%");
         }
 
+        $slotsQuery = $slotsQuery->orderBy('slotTime', 'asc');
+
         return $this->paginationService->transform(
             $slotsQuery->paginate(min($perPage, 25))
         );
