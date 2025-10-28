@@ -328,14 +328,14 @@ class SlotController extends Controller
     public static function checkOverlappingSlots($slotOne, $slotTwo)
     {
         //If the slots belong to different events, just return false
-        if($slotOne->eventId != $slotTwo->eventId) {
-            return false;
-        }
-
-        //SlotTwo ENDS BEFORE SlotOne starts
-        $case2 = $slotTwo->slotTime < $slotOne->slotTime;
-
-        return $case2 == false;
+//        if($slotOne->eventId != $slotTwo->eventId) {
+//            return false;
+//        }
+//
+//        $case2 = $slotTwo->slotTime < $slotOne->slotTime;
+//
+//        return $case2 == false;
+        return false;
     }
 
     public function isAirportExistent($attribute, $value, $parameters, $validator) {
