@@ -166,7 +166,19 @@ class EventController extends Controller
         $perPage = (int)$request->query('perPage', 5);
 
         if ($request->query('status')) {
-            $events->where('status', $request->query('status'));
+            $statusParam = $request->query('status');
+
+            if (is_array($statusParam)) {
+                $statuses = array_filter(array_map('trim', $statusParam));
+            } else {
+                $statuses = array_filter(array_map('trim', explode(',', $statusParam)));
+            }
+
+            if (count($statuses) === 1) {
+                $events = $events->where('status', $statuses[0]);
+            } elseif (count($statuses) > 1) {
+                $events = $events->whereIn('status', $statuses);
+            }
         }
 
         return $this->paginationService->transform($events->paginate($perPage > 25 ? 25 : $perPage));

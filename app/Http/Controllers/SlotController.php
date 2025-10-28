@@ -26,8 +26,8 @@ class SlotController extends Controller
         'destination' => 'nullable|string|regex:/^[A-Z]{4}$/|isAirportExistent',
         'gate' => 'nullable|string|alpha_num|max:10',
         'aircraft' => 'nullable|string|regex:/^[A-Z0-9]{4}$/',
-        'eobtOrigin' => 'nullable|date_format:Y-m-d H:i',
-        'etaDestination' => 'nullable|date_format:Y-m-d H:i',
+        'slotTime' => 'nullable|date_format:Y-m-d H:i:s',
+        'isFixedSlotTime' => 'nullable|boolean',
     ];
 
     public function __construct(PaginationService $paginationService)
@@ -72,7 +72,7 @@ class SlotController extends Controller
         $this->authorize('bookUpdate', [$slot, $action]);
 
         if ($action === 'book') {
-            $validationRules = ['eobtOrigin', 'etaDestination', 'gate'];
+            $validationRules = ['slotTime', 'gate'];
             if(!$slot->isFixedFlightNumber) {
                 $validationRules[] = 'flightNumber';
             }
@@ -101,12 +101,8 @@ class SlotController extends Controller
                 $request->merge(['aircraft' => $slot->aircraft]);
             }
 
-            if($slot->isFixedeobtOrigin) {
-                $request->merge(['eobtOrigin' => $slot->eobtOrigin]);
-            }
-
-            if($slot->isFixedEtaDestination) {
-                $request->merge(['etaDestination' => $slot->etaDestination]);
+            if($slot->isFixedSlotTime) {
+                $request->merge(['slotTime' => $slot->slotTime]);
             }
 
             $this->validate($request, array_intersect_key(
@@ -154,12 +150,8 @@ class SlotController extends Controller
                 $slot->aircraft = null;
             }
 
-            if(!$slot->isFixedeobtOrigin) {
-                $slot->eobtOrigin = null;
-            }
-
-            if(!$slot->isFixedEtaDestination) {
-                $slot->etaDestination = null;
+            if(!$slot->isFixedSlotTime) {
+                $slot->slotTime = null;
             }
 
             $slot->bookingTime = null;
@@ -287,11 +279,8 @@ class SlotController extends Controller
             if (isset($data['flightNumber']) && $data['flightNumber'] == '') {
                 $data['flightNumber'] = null;
             }
-            if (isset($data['eobtOrigin']) && $data['eobtOrigin'] == '') {
-                $data['eobtOrigin'] = null;
-            }
-            if (isset($data['etaDestination']) && $data['etaDestination'] == '') {
-                $data['etaDestination'] = null;
+            if (isset($data['slotTime']) && $data['slotTime'] == '') {
+                $data['slotTime'] = null;
             }
             return $data;
         })->toArray();
@@ -344,7 +333,7 @@ class SlotController extends Controller
         }
 
         //SlotTwo ENDS BEFORE SlotOne starts
-        $case2 = $slotTwo->eobtOrigin < $slotOne->etaDestination;
+        $case2 = $slotTwo->slotTime < $slotOne->slotTime;
 
         return $case2 == false;
     }
@@ -355,7 +344,7 @@ class SlotController extends Controller
 
     public function validateFullSlot(Request $request): void
     {
-        $validationRules = ['gate', 'eobtOrigin', 'etaDestination'];
+        $validationRules = ['gate', 'slotTime'];
 
         if ($request->input('origin')) {
             $validationRules[] = 'origin';
