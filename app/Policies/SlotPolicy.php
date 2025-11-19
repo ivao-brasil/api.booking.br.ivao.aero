@@ -39,7 +39,7 @@ class SlotPolicy
             return Response::deny('book.suspended');
         }
 
-        if (!is_null($slot->pilotId) && $slot->pilotId !== $user->id) {
+        if (!is_null($slot->pilotId) && $slot->pilotId !== $user->id && !$user->admin) {
             Log::info(SlotPolicy::class . " [BOOK UPDATE] User is not the owner of the slot", $user->toArray());
             return Response::deny("book.notOwner");
         }
