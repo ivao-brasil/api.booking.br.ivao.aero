@@ -17,6 +17,7 @@ class Slot extends Model
         'isFixedOrigin',
         'destination',
         'isFixedDestination',
+        'slotTimeReference',
         'slotTime',
         'isFixedSlotTime',
         'gate',

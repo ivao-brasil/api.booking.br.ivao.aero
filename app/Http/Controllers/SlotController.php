@@ -270,18 +270,13 @@ class SlotController extends Controller
 
         $slots = collect($csv->data)->map(function ($data) use ($eventId) {
             $data['eventId'] = $eventId;
-            if (isset($data['origin']) && $data['origin'] == '') {
-                $data['origin'] = null;
+
+            foreach ($data as $key => $value) {
+                if (is_string($value) && trim($value) === '') {
+                    $data[$key] = null;
+                }
             }
-            if (isset($data['destination']) && $data['destination'] == '') {
-                $data['destination'] = null;
-            }
-            if (isset($data['flightNumber']) && $data['flightNumber'] == '') {
-                $data['flightNumber'] = null;
-            }
-            if (isset($data['slotTime']) && $data['slotTime'] == '') {
-                $data['slotTime'] = null;
-            }
+
             return $data;
         })->toArray();
 
