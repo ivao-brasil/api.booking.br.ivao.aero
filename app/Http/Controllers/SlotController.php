@@ -339,7 +339,7 @@ class SlotController extends Controller
 
     public function validateFullSlot(Request $request): void
     {
-        $validationRules = ['gate', 'slotTime'];
+        $validationRules = ['gate'];
 
         if ($request->input('origin')) {
             $validationRules[] = 'origin';
